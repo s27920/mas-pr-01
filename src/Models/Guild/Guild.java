@@ -23,6 +23,10 @@ public class Guild extends SuperObject {
         this.guildName = guildName;
     }
 
+    public Set<GuildMember> getMembers() {
+        return members;
+    }
+
     private void addMember(GuildMember guildMember){
 
     }

@@ -14,8 +14,8 @@ public class Main {
 
         Guild guild = new Guild("guild 1");
 
-        GuildMember member = new GuildMember("Merlin", GuildRank.Elder, guild);
-        GuildMember member1 = new GuildMember("Merlin 1", GuildRank.Elder, guild);
+        GuildMember member = new GuildMember("Merlin", 5, GuildRank.Elder, guild);
+        GuildMember member1 = new GuildMember("Merlin 1", 3, GuildRank.Elder, guild);
 //        GuildMember member2 = new GuildMember("Merlin 2", GuildRank.Elder, guild);
 //        GuildMember member3 = new GuildMember("Merlin 3", GuildRank.Elder, guild);
 //        GuildMember member4 = new GuildMember("Merlin 4", GuildRank.Elder, guild);

@@ -34,8 +34,7 @@ public class WizardPanel extends JPanel {
         guildLabel.setFont(new Font("Broadway", Font.BOLD, 50));
         nameLabel.setFont(new Font("Broadway", Font.BOLD, 50));
 
-        int selectedIcon = 1; // TODO make this stored in wizard
-        JPanel imagePanel = new ImagePanel(String.format("resources/icon%s.png", selectedIcon));
+        JPanel imagePanel = new ImagePanel(String.format("resources/icon%s.png", guildMember.getChosenIcon()));
         imagePanel.setPreferredSize(new Dimension(150, 150));
 
         JPanel labelPanel = new JPanel();

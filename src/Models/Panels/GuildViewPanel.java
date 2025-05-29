@@ -1,17 +1,16 @@
 package Models.Panels;
 
+import Models.Guild.Guild;
 import Models.Guild.GuildMember;
 import Models.Guild.Territory;
 import Models.Mission.Mission;
 import Models.Mission.MissionDifficulty;
-import Models.Util.ColorUtils;
 import Models.Util.Coords;
 import Models.Util.MissionSelectionCallback;
+import Models.Util.PointSize;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,13 +24,26 @@ public class GuildViewPanel extends JPanel {
 
     List<MissionMarker> missionMarkers = new ArrayList<>();
 
+    JLabel guildLabel;
+    JLabel wizardLabel;
 
     public GuildViewPanel(MissionSelectionCallback missionSelectionCallback) {
         this.callback = missionSelectionCallback;
         this.setSize(new Dimension(getWidth(), PANEL_HEIGHT));
         JPanel labelPanel = new JPanel(new BorderLayout());
         labelPanel.setPreferredSize(new Dimension(getWidth(), LABEL_HEIGHT));
-        labelPanel.setBackground(new Color(65, 0, 0));
+        labelPanel.setBackground(new Color(35,35,35));
+
+        this.guildLabel = new JLabel();
+        this.wizardLabel = new JLabel();
+        labelPanel.add(guildLabel, BorderLayout.WEST);
+        labelPanel.add(wizardLabel, BorderLayout.EAST);
+        guildLabel.setForeground(Color.white);
+        wizardLabel.setForeground(Color.white);
+        Font font = new Font("Broadway", Font.BOLD, 20);
+        guildLabel.setFont(font);
+        wizardLabel.setFont(font);
+
 
         JLayeredPane backgroundImagePanel = new JLayeredPane();
         backgroundImagePanel.setPreferredSize(new Dimension(getWidth(), PANEL_HEIGHT - LABEL_HEIGHT)); // TODO make these calculated dynamically maybe
@@ -39,7 +51,6 @@ public class GuildViewPanel extends JPanel {
         ImagePanel backgroundImage = new ImagePanel("resources/world-map.jpg");
         backgroundImage.setBounds(0, 0, 720, PANEL_HEIGHT - LABEL_HEIGHT);
         backgroundImagePanel.add(backgroundImage, JLayeredPane.DEFAULT_LAYER);
-
 
         for (Mission mission : getMockData()) {
             MissionMarker missionMarker = new MissionMarker(
@@ -60,10 +71,12 @@ public class GuildViewPanel extends JPanel {
 
     public void setLoggedInMember(GuildMember member){
         this.loggedInMember = member;
-        for (MissionMarker marker :
-                missionMarkers) {
+        for (MissionMarker marker : missionMarkers) { // TODO suboptimal
             marker.setSelectedMember(member);
         }
+        this.guildLabel.setText(String.format("Guild: %s", member.getGuild().getGuildName()));
+        this.wizardLabel.setText(String.format("Wizard: %s", member.getName()));
+
     }
 
     public List<Mission> getMockData(){
@@ -77,78 +90,4 @@ public class GuildViewPanel extends JPanel {
     }
 }
 
-class MissionMarker extends JPanel{
 
-    private Color pointColor;
-    private Color borderColor;
-    private final JPanel thisPoint;
-    private GuildMember selectedMember;
-
-    public void setSelectedMember(GuildMember selectedMember) {
-        this.selectedMember = selectedMember;
-    }
-
-    public MissionMarker(
-            Color color,
-            Coords coords,
-            PointSize size,
-            MissionSelectionCallback callback,
-            Mission mission
-    ) {
-        this.pointColor = color;
-        this.thisPoint = this;
-
-        this.borderColor = switch (mission.getDifficulty()) {
-            case Easy -> Color.GREEN;
-            case Medium -> Color.YELLOW;
-            case Hard -> Color.RED;
-        };
-
-        this.setBounds(coords.x(), coords.y(), size.width() + 2, size.height() + 2);
-        this.setOpaque(false);
-        this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        this.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                callback.onMissionSelect(selectedMember, mission);
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                pointColor = ColorUtils.darkenColor(pointColor, 25);
-                borderColor = ColorUtils.darkenColor(borderColor, 25);
-                thisPoint.revalidate();
-                thisPoint.repaint();
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                pointColor = ColorUtils.lightenColor(pointColor, 25);
-                borderColor = ColorUtils.lightenColor(borderColor, 25);
-                thisPoint.revalidate();
-                thisPoint.repaint();
-            }
-        });
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        Graphics2D g2d = ((Graphics2D) g.create());
-
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        g2d.setColor(pointColor);
-        g2d.fillOval(0, 0, 20, 20);
-
-        g2d.setColor(borderColor);
-        g2d.setStroke(new BasicStroke(2.0f));
-        g2d.drawOval(0, 0, 20, 20);
-
-    }
-
-}
-
-
-record PointSize(int width, int height){ }

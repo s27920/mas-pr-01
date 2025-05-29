@@ -16,6 +16,7 @@ public class Wizard extends SuperObject {
     private Set<KnownSpell> knownSpells;
     private Set<Ownership> ownedDomiciles;
     private Set<SpellTome> ownedTomes;
+    private int chosenIcon;
 
 
     public void purchaseDomicile(Domicile domicile){
@@ -39,8 +40,22 @@ public class Wizard extends SuperObject {
         tome.setWizard(this);
     }
 
+
+    public int getChosenIcon() {
+        return chosenIcon;
+    }
+
+    public Wizard(String name, int chosenIcon) {
+        this.name = name;
+        this.chosenIcon = chosenIcon;
+        this.knownSpells = new HashSet<>();
+        this.ownedDomiciles = new HashSet<>();
+        this.ownedTomes = new HashSet<>();
+    }
+
     public Wizard(String name) {
         this.name = name;
+        this.chosenIcon = 1;
         this.knownSpells = new HashSet<>();
         this.ownedDomiciles = new HashSet<>();
         this.ownedTomes = new HashSet<>();
