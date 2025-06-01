@@ -10,4 +10,8 @@ public class ColorUtils {
         return new Color(Math.min(color.getRed() + lightenBy, 255), Math.min(color.getGreen() + lightenBy, 255), Math.min(color.getBlue() + lightenBy, 255), color.getAlpha());
     }
 
+    public static Color genRandomColor(){
+        return new Color(((int) (Math.random() * 255)), ((int) (Math.random() * 255)), ((int) (Math.random() * 255)));
+    }
+
 }

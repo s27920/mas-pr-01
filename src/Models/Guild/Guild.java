@@ -27,7 +27,7 @@ public class Guild extends SuperObject {
         return members;
     }
 
-    private void addMember(GuildMember guildMember){
-
+    public void addMember(GuildMember guildMember){
+        this.members.add(guildMember);
     }
 }

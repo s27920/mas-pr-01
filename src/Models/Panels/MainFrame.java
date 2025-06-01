@@ -1,5 +1,7 @@
 package Models.Panels;
 
+import Models.Mission.MissionStatus;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -12,12 +14,23 @@ public class MainFrame extends JFrame {
         this.cardLayout = ((CardLayout) mainPanel.getLayout());
 
 
-        MissionSelectionPanel missionSelectionPanel = new MissionSelectionPanel();
+        MissionSelectionPanel missionSelectionPanel = new MissionSelectionPanel(
+                ()->{
+                    cardLayout.previous(mainPanel);
+                },
+                () -> {
 
-        GuildViewPanel guildViewPanel = new GuildViewPanel((member, territory)->{
+                }
+        );
+
+        GuildViewPanel guildViewPanel = new GuildViewPanel((member, mission)->{
             missionSelectionPanel.setMissionDispatcher(member);
-            missionSelectionPanel.setSelectedMission(territory);
-            cardLayout.next(mainPanel);
+            missionSelectionPanel.setSelectedMission(mission);
+
+            missionSelectionPanel.populateMemberSelectionList();
+            if (mission.getStatus() == MissionStatus.CREATED){
+                cardLayout.next(mainPanel);
+            }
         });
 
         this.mainPanel.add(new LoginPanel((member)-> {
@@ -33,6 +46,6 @@ public class MainFrame extends JFrame {
         this.setVisible(true);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setResizable(false);
-        this.setSize(new Dimension(720, 480));
+        this.setSize(new Dimension(720, 560));
     }
 }

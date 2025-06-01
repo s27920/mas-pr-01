@@ -1,9 +1,11 @@
 package Models.Magic;
 
+import Models.Mission.Mission;
 import Models.Util.SpellTypePlusValTuple;
 import Models.Util.SuperObject;
 
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 
 public class Spell extends SuperObject {
@@ -15,6 +17,7 @@ public class Spell extends SuperObject {
     private final EnumSet<SpellType> spellTypes;
     private final Set<KnownSpell> knownSpells;
 
+    private final Set<Mission> missionRequirement;
     public Spell(String name, Set<KnownSpell> knownSpells, SpellTypePlusValTuple... tuples) {
         this.name = name;
         this.knownSpells = knownSpells;
@@ -27,6 +30,14 @@ public class Spell extends SuperObject {
                 case Support -> setDamageBoostVal(tuple.value());
                 }
         }
+        this.missionRequirement = new HashSet<>();
+    }
+
+    public Spell(String name) {
+        this.name = name;
+        this.spellTypes = EnumSet.noneOf(SpellType.class);
+        this.knownSpells = new HashSet<>();
+        this.missionRequirement = new HashSet<>();
     }
 
     public String getName() {

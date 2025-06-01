@@ -25,6 +25,7 @@ public class GuildMember extends Wizard {
         super(name, chosenIcon);
         this.rank = rank;
         this.guild = guild;
+        guild.addMember(this);
     }
 
     public GuildMember(String name, Set<KnownSpell> knownSpells, Set<Ownership> ownedDomiciles, Set<SpellTome> ownedTomes, GuildRank rank, Guild guild) {

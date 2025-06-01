@@ -15,4 +15,8 @@ public class KnownSpell extends SuperObject {
         spell.addKnownSpell(this);
         wizard.addKnownSpell(this);
     }
+
+    public Spell getSpell() {
+        return spell;
+    }
 }

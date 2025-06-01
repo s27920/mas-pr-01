@@ -35,9 +35,17 @@ public class Wizard extends SuperObject {
 
     }
 
+    public Set<KnownSpell> getKnownSpells() {
+        return knownSpells;
+    }
+
     public void addTome(SpellTome tome){
         this.ownedTomes.add(tome);
         tome.setWizard(this);
+    }
+
+    public void LearnSpell(Spell spell){
+        this.knownSpells.add(new KnownSpell(this, spell, 1));
     }
 
 
@@ -76,6 +84,10 @@ public class Wizard extends SuperObject {
     public String toString() {
         final StringBuffer sb = new StringBuffer("Wizard{");
         sb.append("name='").append(name).append('\'');
+        sb.append(", knownSpells=").append(knownSpells);
+        sb.append(", ownedDomiciles=").append(ownedDomiciles);
+        sb.append(", ownedTomes=").append(ownedTomes);
+        sb.append(", chosenIcon=").append(chosenIcon);
         sb.append('}');
         return sb.toString();
     }
