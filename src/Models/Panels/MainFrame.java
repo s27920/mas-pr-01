@@ -19,7 +19,7 @@ public class MainFrame extends JFrame {
                     cardLayout.previous(mainPanel);
                 },
                 () -> {
-
+//                    cardLayout.previous(mainPanel);
                 }
         );
 
@@ -29,7 +29,11 @@ public class MainFrame extends JFrame {
 
             missionSelectionPanel.populateMemberSelectionList();
             if (mission.getStatus() == MissionStatus.CREATED){
-                cardLayout.next(mainPanel);
+                if (member.getValidGuildMembers().size() >= 2){
+                    cardLayout.next(mainPanel);
+                }else {
+                    System.out.println("not enough members");
+                }
             }
         });
 

@@ -25,6 +25,21 @@ public class ImagePanel extends JPanel {
         }
     }
 
+    // Icon image panel
+    public ImagePanel(int iconNum){
+        try {
+            image = ImageIO.read(new File(String.format("resources/icon%s.png", iconNum)));
+            if(image != null){
+                this.x1 = 0;
+                this.x2 = image.getWidth();
+                this.y1 = 0;
+                this.y2 = image.getHeight();
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
     public void setClip(int x1, int y1, int x2, int y2) {
         this.x1 = x1;
         this.y1 = y1;

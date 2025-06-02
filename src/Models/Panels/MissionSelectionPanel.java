@@ -1,6 +1,7 @@
 package Models.Panels;
 
 import Models.Guild.GuildMember;
+import Models.Guild.MemberState;
 import Models.Magic.Spell;
 import Models.Mission.Mission;
 import Models.Util.ColorUtils;
@@ -10,9 +11,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class MissionSelectionPanel extends JPanel {
     private final JPanel thisPanel;
@@ -27,7 +26,7 @@ public class MissionSelectionPanel extends JPanel {
     private final int HEIGHT = 560;
 
     private GuildMember[] selectedMembers;
-    private Iterable[] selectedMemberPanels;
+    private Models.Util.Iterable[] selectedMemberPanels;
     private int selectedMemberPointer;
 
     private final Runnable cancelCallback;
@@ -43,7 +42,14 @@ public class MissionSelectionPanel extends JPanel {
     private final int SCROLL_BAR_WIDTH = 8;
     private final double textDescriptionPanelHeight;
 
-    public MissionSelectionPanel(Runnable cancelCallback, Runnable confirmCallback) {
+    private final HashMap<GuildMember, GuildMemberSelectionTile> guildMemberToPanelMapping;
+
+    private final int MISSION_COMPLETION_TIME_MILLIS = 15000; // TODO hardcoded, change this
+
+    public MissionSelectionPanel(
+            Runnable cancelCallback,
+            Runnable confirmCallback
+    ) {
         this.cancelCallback = cancelCallback;
         this.confirmCallback = confirmCallback;
 
@@ -51,8 +57,10 @@ public class MissionSelectionPanel extends JPanel {
 
         this.setLayout(new BorderLayout());
         this.selectedMembers = new GuildMember[4];
-        this.selectedMemberPanels = new Iterable[4];
+        this.selectedMemberPanels = new Models.Util.Iterable[4];
         this.selectedMemberPointer = 0;
+
+        this.guildMemberToPanelMapping = new HashMap<>();
 
         JPanel memberSelectionPanel = new JPanel();
         JPanel missionDetailsPanel = new JPanel();
@@ -97,7 +105,6 @@ public class MissionSelectionPanel extends JPanel {
 
         initPlaceHolders();
 
-        //mission detail panel set-up
         missionDetailsPanel.setBackground(Color.BLUE);
         missionDetailsPanel.setLayout(new BorderLayout());
 
@@ -135,8 +142,20 @@ public class MissionSelectionPanel extends JPanel {
                         });
                     }
                     if (requiredSpells.size() == 0){
-                        selectedMission.startMission();
-                        selectedMission.setMissionCompletionTimeMillis(15000);
+                        for (int i = 0; i < selectedMemberPointer; i++) {
+                            selectedMembers[i].assignNewMission(selectedMission);
+                        }
+
+                        selectedMission.setMissionCompletionTimeMillis(MISSION_COMPLETION_TIME_MILLIS);
+                        final GuildMember[] guildMembers = Arrays.copyOf(selectedMembers, selectedMemberPointer);
+                        selectedMission.startMission(()->{
+                            for (GuildMember guildMember : guildMembers) {
+                                guildMember.setMemberState(MemberState.ON_STANDBY);
+                                thisPanel.revalidate();
+                                thisPanel.repaint();
+                            }
+                            confirmCallback.run();
+                        });
                         cancelCallback.run();
                         System.out.println("Start mission");
                     }else {
@@ -216,24 +235,41 @@ public class MissionSelectionPanel extends JPanel {
 
         missionRequirementsScrollPane.getVerticalScrollBar().setUnitIncrement(10);
         missionRequirementsScrollPane.getVerticalScrollBar().setBlockIncrement(50);
-
-        System.out.println(missionRequirementsScrollPane.getHorizontalScrollBar().getWidth());
-
     }
 
     public void setMissionDispatcher(GuildMember missionDispatcher) {
         this.missionDispatcher = missionDispatcher;
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        if (missionDispatcher != null){
+            missionDispatcher.getInvalidGuildMembers().forEach(member -> {
+                JPanel panel;
+                if ((panel = guildMemberToPanelMapping.get(member))!= null){
+                    memberListPanel.remove(panel);
+                    guildMemberToPanelMapping.remove(member);
+                    revalidate();
+                    repaint();
+                }
+            });
+            populateMemberSelectionList();
+        }
+
+    }
+
     public void populateMemberSelectionList(){
-        for (GuildMember member : missionDispatcher.getGuild().getMembers()) {
-            memberListPanel.add(new GuildMemberSelectionTile(WIDTH, (panel)->{
+        for (GuildMember member : missionDispatcher.getValidGuildMembers()) {
+            if (!guildMemberToPanelMapping.containsKey(member)){
+                GuildMemberSelectionTile comp = new GuildMemberSelectionTile(WIDTH, (panel) -> {
                 int index;
-                if ((index = findMemberIndex(member)) != -1){
+                if ((index = findMemberIndex(member)) != -1) {
                     removeComponentFromMembers(((SelectedMemberPanel) selectedMemberPanels[index]));
-                    panel.setBorder(BorderFactory.createLineBorder(Color.BLACK,2));
-                } else if (selectedMemberPointer < 4){
-                    panel.setBorder(BorderFactory.createLineBorder(new Color(1, 136, 56),2));
+                    panel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+                } else if (selectedMemberPointer < 4) {
+                    panel.setBorder(BorderFactory.createLineBorder(new Color(1, 136, 56), 2));
 
                     selectedMembers[selectedMemberPointer] = member;
                     selectedPanel.remove((PlaceHolderPanel) selectedMemberPanels[selectedMemberPointer]);
@@ -248,11 +284,13 @@ public class MissionSelectionPanel extends JPanel {
 
                     addMouseClickListenerToMemberPanelHelper((JPanel) selectedMemberPanels[selectedMemberPointer], panel);
                     selectedMemberPointer++;
-                }
-            }));
+                    }
+                });
+                memberListPanel.add(comp);
+                guildMemberToPanelMapping.put(member, comp);
+            }
         }
     }
-
     private int findMemberIndex(GuildMember member){
         for (int i = 0; i < selectedMemberPointer; i++) {
             if (selectedMembers[i] == member){
@@ -276,7 +314,7 @@ public class MissionSelectionPanel extends JPanel {
         selectedPanel.remove(component);
         int selectedGuildMemberIndex = ((SelectedMemberPanel) component).getIndex();
         for (int i = selectedGuildMemberIndex + 1; i < 4; i++) {
-            Iterable selectedMemberPanel = selectedMemberPanels[i];
+            Models.Util.Iterable selectedMemberPanel = selectedMemberPanels[i];
 
             selectedMemberPanel.setIndex(selectedMemberPanel.getIndex() - 1);
 
@@ -305,14 +343,24 @@ public class MissionSelectionPanel extends JPanel {
     public void setSelectedMission(Mission selectedMission) {
         this.selectedMission = selectedMission;
 
-        int missionX = selectedMission.getTerritory().getCoords().x();
-        int missionY = selectedMission.getTerritory().getCoords().y();
+
+        double xw = 720;
+        double yh = 480;
+
+        int missionX = selectedMission.getTerritory().getTerritoryCoordinates().x();
+        int missionY = selectedMission.getTerritory().getTerritoryCoordinates().y();
 
         int imageWidth = clippedImagePanel.getOriginalImageWidth();
         int imageHeight = clippedImagePanel.getOriginalImageHeight();
 
-        int zoomWidth = 150;
-        int zoomHeight = 100;
+        double xScale = imageWidth / xw;
+        double yScale = imageHeight / yh;
+
+        missionX = (int) (missionX * xScale);
+        missionY = (int) (missionY * yScale);
+
+        int zoomWidth = 300;
+        int zoomHeight = 200;
 
         int halfWidth = zoomWidth / 2;
         int halfHeight = zoomHeight / 2;
@@ -349,10 +397,6 @@ public class MissionSelectionPanel extends JPanel {
             missionRequirementsScrollablePanel.add(new MissionRequirementTile(new Dimension(panelWidth, panelHeight), s));
         });
 
-//        System.out.printf("missionX: %s | missionY: %s\n", missionX, missionY);
-//        System.out.printf("x1: %s | y1: %s | x2: %s | y2: %s\n", x1, y1, x2, y2);
-//        System.out.printf("Zoom region size: %dx%d\n", (x2-x1), (y2-y1));
-
         clippedImagePanel.setClip(x1, y1, x2, y2);
     }
 
@@ -368,8 +412,18 @@ public class MissionSelectionPanel extends JPanel {
         for (int i = 0; i < 4; i++) {
             selectedPanel.remove((Component) selectedMemberPanels[i]);
         }
+        int accessibleChildrenCount = memberListPanel.getAccessibleContext().getAccessibleChildrenCount();
+        Component[] components = memberListPanel.getComponents();
+
+        for (int i = 0; i < accessibleChildrenCount; i++) {
+            Component component = components[i];
+            if (component instanceof GuildMemberSelectionTile) {
+                ((GuildMemberSelectionTile) component).setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
+            }
+        }
+
         selectedMemberPointer = 0;
-        selectedMemberPanels = new Iterable[4];
+        selectedMemberPanels = new Models.Util.Iterable[4];
         initPlaceHolders();
         selectedMembers = new GuildMember[4];
     }
@@ -440,12 +494,7 @@ class GuildMemberSelectionTile extends JPanel{
     }
 }
 
-interface Iterable {
-    int getIndex();
-    void setIndex(int index);
-}
-
-class SelectedMemberPanel extends JPanel implements Iterable{
+class SelectedMemberPanel extends JPanel implements Models.Util.Iterable {
     private int index;
     public SelectedMemberPanel(GuildMember guildMember, Dimension dimension, int index) {
         this.index = index;
@@ -480,7 +529,7 @@ class SelectedMemberPanel extends JPanel implements Iterable{
     }
 }
 
-class PlaceHolderPanel extends JPanel implements Iterable{
+class PlaceHolderPanel extends JPanel implements Models.Util.Iterable {
     private int index;
     public PlaceHolderPanel(Dimension dimension, int index) {
 

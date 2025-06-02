@@ -1,15 +1,21 @@
 package Models.Guild;
 
+import Models.Mission.Mission;
 import Models.Util.Coords;
 import Models.Util.SuperObject;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 public class Territory extends SuperObject {
-    private String name;
-    private Coords coords;
+    private String territoryName;
+    private int dangerLevel;
+    private int population;
+    private boolean restrictedAccess;
+
+    private Coords territoryCoordinates;
+    private Guild guild;
+    private Mission territoryMission;
 
     public static Coords[] pois = {
           new Coords(71, 69),
@@ -38,8 +44,8 @@ public class Territory extends SuperObject {
     };
 
     public Territory(String name, Coords coords) {
-        this.name = name;
-        this.coords = coords;
+        this.territoryName = name;
+        this.territoryCoordinates = coords;
     }
 
     public static Coords[] getNUniquePois(int n){
@@ -54,7 +60,15 @@ public class Territory extends SuperObject {
         return selectedPois.toArray(new Coords[0]);
     }
 
-    public Coords getCoords() {
-        return coords;
+    public Guild getGuild() {
+        return guild;
+    }
+
+    public void setGuild(Guild guild) {
+        this.guild = guild;
+    }
+
+    public Coords getTerritoryCoordinates() {
+        return territoryCoordinates;
     }
 }

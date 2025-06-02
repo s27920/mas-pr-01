@@ -2,6 +2,7 @@ package Models.Panels;
 
 import Models.Guild.GuildMember;
 import Models.Mission.Mission;
+import Models.Mission.MissionAssignment;
 import Models.Mission.MissionStatus;
 import Models.Util.Coords;
 import Models.Util.MissionSelectionCallback;
@@ -70,33 +71,29 @@ public class GuildViewPanel extends JPanel {
             int finalI = i;
             MissionMarker missionMarker = new MissionMarker(
                     color,
-                    mission.getTerritory().getCoords(),
+                    mission.getTerritory().getTerritoryCoordinates(),
                     mission,
                     missionSelectionCallback,
-                    () -> {
-                        backgroundImagePanel.add(new DetailPanel(
-                                loggedInMember,
-                                mission,
-                                mission.getTerritory().getCoords(),
-                                new Dimension(DESC_TILE_WIDTH, DESC_TILE_HEIGHT),
-                                new Dimension(720, PANEL_HEIGHT - LABEL_HEIGHT), // TODO suboptimal, try to extract at runtime
-                                color,
-                                missionSelectionCallback,
-                                (shape) -> {
-                                    List<MissionMarker> markersDisappeared = new ArrayList<>();
-                                    for (MissionMarker marker : markers) {
-                                        if (shape.intersects(marker.getX1(), marker.getY1(), marker.getDiameterWithBorder(), marker.getDiameterWithBorder())){
-                                            marker.setVisible(false);
-                                            markersDisappeared.add(marker);
-                                        }
+                    () -> backgroundImagePanel.add(new DetailPanel(
+                            loggedInMember,
+                            mission,
+                            mission.getTerritory().getTerritoryCoordinates(),
+                            new Dimension(DESC_TILE_WIDTH, DESC_TILE_HEIGHT),
+                            new Dimension(720, PANEL_HEIGHT - LABEL_HEIGHT), // TODO suboptimal, try to extract at runtime
+                            color,
+                            missionSelectionCallback,
+                            (shape) -> {
+                                List<MissionMarker> markersDisappeared = new ArrayList<>();
+                                for (MissionMarker marker : markers) {
+                                    if (shape.intersects(marker.getX1(), marker.getY1(), marker.getDiameterWithBorder(), marker.getDiameterWithBorder())){
+                                        marker.setVisible(false);
+                                        markersDisappeared.add(marker);
                                     }
-                                    return markersDisappeared.toArray(new MissionMarker[0]);
-                                },
-                                () -> {
-                                    markers[finalI].setVisible(true);
                                 }
-                        ), JLayeredPane.PALETTE_LAYER);
-                    }
+                                return markersDisappeared.toArray(new MissionMarker[0]);
+                            },
+                            () -> markers[finalI].setVisible(true)
+                    ), JLayeredPane.PALETTE_LAYER)
             );
             markers[i] = missionMarker;
 
@@ -159,7 +156,7 @@ class DetailPanel extends JPanel implements Runnable{
             MissionSelectionCallback missionSelectionCallback,
             ShapeIntersectCallback shapeIntersectCallback,
             Runnable unsetFlag
-            ) {
+    ) {
         this.guildMember = member;
         this.mission = mission;
         this.shapeIntersectCallback = shapeIntersectCallback;
@@ -174,35 +171,100 @@ class DetailPanel extends JPanel implements Runnable{
         this.setBackground(color);
         this.setPreferredSize(new Dimension(dim.width, dim.height));
 
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        this.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
 
         statusLabel = new JLabel(String.format("Mission status: %s", mission.getStatus().name().toLowerCase().replaceAll("_", " ")), SwingConstants.CENTER);
-        Dimension size = new Dimension(dim.width, ((int) (dim.height * 0.15)));
-        statusLabel.setPreferredSize(size);
-        statusLabel.setMinimumSize(size);
-        statusLabel.setMaximumSize(size);
-        statusLabel.setForeground(new Color(35,35,35));
+        Dimension labelSize = new Dimension(dim.width, ((int) (dim.height * 0.15)));
+        statusLabel.setPreferredSize(labelSize);
+        Color carbonColor = new Color(35, 35, 35);
+        statusLabel.setForeground(carbonColor);
         statusLabel.setFont(infoFont);
 
-        this.add(statusLabel);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1.0;
+        gbc.weighty = 0.0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.NORTH;
+        this.add(statusLabel, gbc);
+
+        int currentRow = 1;
 
         if (mission.getStatus() == MissionStatus.IN_PROGRESS){
             this.timerThread = new Thread(this);
             this.timerThread.start();
             this.timeLabel = new JLabel();
-            timeLabel.setPreferredSize(size);
-            timeLabel.setMinimumSize(size);
-            timeLabel.setMaximumSize(size);
-            this.add(timeLabel);
-            timeLabel.setForeground(new Color(35,35,35));
+            timeLabel.setPreferredSize(labelSize);
+            timeLabel.setForeground(carbonColor);
             this.timeLabel.setFont(timerFont);
+
+            gbc.gridy = currentRow;
+            this.add(timeLabel, gbc);
+            currentRow++;
         }
+
+        if (mission.getStatus() == MissionStatus.IN_PROGRESS || mission.getStatus() == MissionStatus.COMPLETED) {
+            Color transparentColor = new Color(0, 0, 0, 0);
+            MissionAssignment[] missionAssignments = mission.getAssignments().toArray(new MissionAssignment[0]);
+
+            int singleExpeditionListPanelHeight = ((int) (dim.height * 0.15));
+
+            for (int i = 0; i < missionAssignments.length; i++) {
+                MissionAssignment assignment = missionAssignments[i];
+                GuildMember assignedGuildMember = assignment.getGuildMember();
+
+                JPanel assignedMemberPanel = new JPanel(new BorderLayout());
+                assignedMemberPanel.setPreferredSize(new Dimension(dim.width, singleExpeditionListPanelHeight));
+                assignedMemberPanel.setBackground(transparentColor);
+
+                JPanel assignedMemberDetailPanel = new JPanel(new BorderLayout());
+                int assignedMemberDetailPanelWidth = (int) (dim.width * 0.9);
+                int paddingWidth = (dim.width - assignedMemberDetailPanelWidth) / 2;
+
+                assignedMemberDetailPanel.setPreferredSize(new Dimension(assignedMemberDetailPanelWidth, singleExpeditionListPanelHeight));
+                assignedMemberDetailPanel.setBackground(transparentColor);
+
+                ImagePanel iconPanel = new ImagePanel(assignedGuildMember.getChosenIcon());
+                JLabel memberName = new JLabel(assignedGuildMember.getName(), SwingConstants.CENTER);
+
+                iconPanel.setPreferredSize(new Dimension(singleExpeditionListPanelHeight, singleExpeditionListPanelHeight)); // intentionally duplicated as icons are NxN
+                iconPanel.setBackground(transparentColor);
+                memberName.setPreferredSize(new Dimension(assignedMemberDetailPanelWidth - singleExpeditionListPanelHeight, singleExpeditionListPanelHeight));
+                memberName.setFont(infoFont);
+                memberName.setForeground(carbonColor);
+
+                assignedMemberDetailPanel.add(iconPanel, BorderLayout.WEST);
+                assignedMemberDetailPanel.add(memberName, BorderLayout.EAST);
+
+
+                JPanel fillerPanelLeft = new JPanel();
+                JPanel fillerPanelRight = new JPanel();
+
+                fillerPanelLeft.setPreferredSize(new Dimension(paddingWidth, singleExpeditionListPanelHeight));
+                fillerPanelLeft.setBackground(transparentColor);
+
+                fillerPanelRight.setPreferredSize(new Dimension(paddingWidth, singleExpeditionListPanelHeight));
+                fillerPanelRight.setBackground(transparentColor);
+
+                assignedMemberPanel.add(fillerPanelLeft, BorderLayout.WEST);
+                assignedMemberPanel.add(fillerPanelRight, BorderLayout.EAST);
+                assignedMemberPanel.add(assignedMemberDetailPanel, BorderLayout.CENTER);
+
+                gbc.gridy = currentRow + i;
+                this.add(assignedMemberPanel, gbc);
+            }
+
+            currentRow += missionAssignments.length;
+        }
+
 
         int startX = coords.x() - (dim.width / 2);
         int startY = coords.y() - (dim.height / 2);
 
         int endX = startX + dim.width;
         int endY = startY + dim.height;
+
         if (endX > bounds.width){
             int overflow = endX - bounds.width;
             startX -= overflow;

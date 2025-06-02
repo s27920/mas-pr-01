@@ -4,8 +4,8 @@ import Models.Guild.GuildMember;
 import Models.Util.SuperObject;
 
 public class MissionAssignment extends SuperObject {
-    GuildMember guildMember;
-    Mission mission;
+    private GuildMember guildMember;
+    private Mission mission;
 
     public MissionAssignment(GuildMember guildMember, Mission mission) {
         setMission(mission);
@@ -21,4 +21,14 @@ public class MissionAssignment extends SuperObject {
     public void setMission(Mission mission) {
         this.mission = mission;
     }
+
+    public GuildMember getGuildMember() {
+        return guildMember;
+    }
+
+    public Mission getMission() {
+        return mission;
+    }
+
+
 }

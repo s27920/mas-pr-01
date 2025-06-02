@@ -1,8 +1,10 @@
 package Models.Mission;
 
 import Models.Guild.GuildMember;
+import Models.Guild.MemberState;
 import Models.Guild.Territory;
 import Models.Magic.Spell;
+import Models.Util.MissionTimerService;
 import Models.Util.SuperObject;
 
 import java.util.HashSet;
@@ -24,13 +26,35 @@ public class Mission extends SuperObject {
 
     private final Set<Spell> requiredSpells;
 
-    public Mission(Territory territory, MissionDifficulty difficulty, String name, String description, Set<Spell> requiredSpells) {
+    public Mission(Territory territory, MissionDifficulty difficulty, String name, String description, Set<Spell> requiredSpells, Set<MissionReward> rewards) {
+        this.rewards = rewards;
         this.territory = territory;
         this.difficulty = difficulty;
         this.name = name;
         this.description = description;
         this.requiredSpells = requiredSpells;
         this.status = MissionStatus.CREATED;
+        this.assignments = new HashSet<>();
+
+    }
+
+    public void startMission(Runnable callback){
+        MissionTimerService.getInstance().registerMission(this, callback);
+        this.status = MissionStatus.IN_PROGRESS;
+        this.startTimeMillis = System.currentTimeMillis();
+    }
+    public void completeMission(){
+
+        // TODO make injuries possible
+        this.assignments.forEach(assignment -> assignment.getGuildMember().setMemberState(MemberState.ON_STANDBY));
+        this.status = MissionStatus.COMPLETED;
+    }
+
+    public void setMissionCompletionTimeMillis(long millis){
+        if (millis < 0){
+            throw new IllegalArgumentException(">:( no negative milliseconds");
+        }
+        this.missionCompletionTimeMillis = millis;
     }
 
     public MissionStatus getStatus() {
@@ -45,27 +69,9 @@ public class Mission extends SuperObject {
         return missionCompletionTimeMillis;
     }
 
-    public void startMission(){
-        this.status = MissionStatus.IN_PROGRESS;
-        this.startTimeMillis = System.currentTimeMillis();
-    }
 
-    public void setMissionCompletionTimeMillis(long millis){
-        if (millis < 0){
-            throw new IllegalArgumentException(">:( no negative milliseconds");
-        }
-        this.missionCompletionTimeMillis = millis;
-    }
-    public void completeMission(){
-        this.status = MissionStatus.COMPLETED;
-    }
-
-    public Mission(Territory territory, MissionDifficulty difficulty, String name, String description) {
-        this.territory = territory;
-        this.difficulty = difficulty;
-        this.name = name;
-        this.description = description;
-        requiredSpells = new HashSet<>();
+    public Set<MissionAssignment> getAssignments() {
+        return assignments;
     }
 
     public Territory getTerritory() {

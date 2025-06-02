@@ -6,6 +6,7 @@ import Models.Wizard;
 public class KnownSpell extends SuperObject {
     private Spell spell;
     private Wizard wizard;
+
     private int masteryLevel;
 
     public KnownSpell(Wizard wizard, Spell spell, int masteryLevel) {
@@ -18,5 +19,10 @@ public class KnownSpell extends SuperObject {
 
     public Spell getSpell() {
         return spell;
+    }
+
+    // /successRate: double
+    public double getSuccessRate(){
+        return masteryLevel / 10.0;
     }
 }

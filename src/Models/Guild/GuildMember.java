@@ -4,38 +4,64 @@ import Models.Magic.KnownSpell;
 import Models.Magic.SpellTome;
 import Models.Mission.Mission;
 import Models.Mission.MissionAssignment;
+import Models.Mission.MissionStatus;
 import Models.RealEstate.Ownership;
 import Models.Util.SuperObject;
 import Models.Wizard;
 
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class GuildMember extends Wizard {
-    private GuildRank rank;
+    private final LocalDate joinedDate;
+
     private Guild guild;
-    private Set<MissionAssignment> assignments;
+    private GuildRank rank;
+    private MemberState memberState;
 
-    public GuildMember(String name, GuildRank rank, Guild guild) {
-        super(name);
-        this.rank = rank;
-        this.guild = guild;
-    }
+    private final Set<MissionAssignment> assignments;
 
-    public GuildMember(String name, int chosenIcon, GuildRank rank, Guild guild) {
+    public GuildMember(String name, int chosenIcon, Guild guild) {
         super(name, chosenIcon);
-        this.rank = rank;
         this.guild = guild;
-        guild.addMember(this);
+
+        this.assignments = new HashSet<>();
+
+        this.rank = GuildRank.Apprentice;
+        this.memberState = MemberState.ON_STANDBY;
+        this.joinedDate = LocalDate.now();
+
+        this.guild.addMember(this);
+
     }
 
-    public GuildMember(String name, Set<KnownSpell> knownSpells, Set<Ownership> ownedDomiciles, Set<SpellTome> ownedTomes, GuildRank rank, Guild guild) {
-        super(name, knownSpells, ownedDomiciles, ownedTomes);
-        this.rank = rank;
+    public GuildMember(String name, Set<KnownSpell> knownSpells, Set<Ownership> ownedDomiciles, Set<SpellTome> ownedTomes, int chosenIcon, LocalDate joinedDate, Guild guild, GuildRank rank, MemberState memberState, Set<MissionAssignment> assignments) {
+        super(name, knownSpells, ownedDomiciles, ownedTomes, chosenIcon);
+        this.joinedDate = joinedDate;
         this.guild = guild;
+        this.rank = rank;
+        this.memberState = memberState;
+        this.assignments = assignments;
     }
 
     public void assignNewMission(Mission mission){
-        assignments.add(new MissionAssignment(this, mission));
+        this.assignments.add(new MissionAssignment(this, mission));
+        this.memberState = MemberState.IN_MISSION;
+    }
+
+    // TODO put this in guild
+    public List<GuildMember> getValidGuildMembers(){
+        return getGuild().getMembers().stream().filter(m->m.getMemberState() == MemberState.ON_STANDBY).toList();
+    }
+
+    public List<GuildMember> getInvalidGuildMembers(){
+        return getGuild().getMembers().stream().filter(m->m.getMemberState() != MemberState.ON_STANDBY).toList();
+    }
+
+    public void setGuild(Guild guild) {
+        this.guild = guild;
     }
 
     public Guild getGuild() {
@@ -49,6 +75,26 @@ public class GuildMember extends Wizard {
     public void addMissionAssignment(MissionAssignment missionAssignment) {
 
         this.assignments.add(missionAssignment);
+    }
+
+    public int getTotalMissionsCompleted(){
+        return this.assignments.stream().filter(a->a.getMission().getStatus() == MissionStatus.COMPLETED).toList().size();
+    }
+
+    public MemberState getMemberState() {
+        return memberState;
+    }
+
+    public void setMemberState(MemberState memberState) {
+        this.memberState = memberState;
+    }
+
+    public void getPromoted(){
+        this.rank = switch (this.rank){
+            case Apprentice -> GuildRank.Elder;
+            case Master -> GuildRank.Master;
+            case Elder -> (this.guild.getMembers().stream().noneMatch(m -> m.getRank() == GuildRank.Master)) ? GuildRank.Master : GuildRank.Elder;
+        };
     }
 
     @Override
