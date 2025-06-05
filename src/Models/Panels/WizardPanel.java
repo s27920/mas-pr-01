@@ -9,22 +9,21 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class WizardPanel extends JPanel {
+public class WizardPanel extends RoundedPanel {
     private final int BORDER = 3;
 
     private final JPanel currPanel;
     private final MemberSelectionCallback switchCardsCallback;
 
     public WizardPanel(GuildMember guildMember, MemberSelectionCallback callback) {
-        this.switchCardsCallback = callback;
+        super(new Dimension(-1, 150), 15, new Color(0x606060));
 
+        this.switchCardsCallback = callback;
         this.currPanel = this;
 
         setLayout(new BorderLayout());
-        setBackground(new Color(0x606060));
         setBorder(BorderFactory.createEmptyBorder(BORDER, BORDER, BORDER, BORDER));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        setPreferredSize(new Dimension(-1, 150));
         setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
 
         JLabel guildLabel = new JLabel(String.format("Guild: %s", guildMember.getGuild().getGuildName()));
@@ -40,7 +39,6 @@ public class WizardPanel extends JPanel {
 
         JPanel labelPanel = new JPanel();
         labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.Y_AXIS));
-        labelPanel.setOpaque(false);
         labelPanel.add(guildLabel);
         labelPanel.add(Box.createVerticalStrut(10));
         labelPanel.add(nameLabel);

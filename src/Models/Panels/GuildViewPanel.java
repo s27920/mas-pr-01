@@ -130,7 +130,7 @@ public class GuildViewPanel extends JPanel {
     }
 }
 
-class DetailPanel extends JPanel implements Runnable{
+class DetailPanel extends RoundedPanel implements Runnable{
     private final JPanel thisPanel;
     private final JLabel statusLabel;
     private Thread timerThread;
@@ -138,14 +138,14 @@ class DetailPanel extends JPanel implements Runnable{
 
     private final Mission mission;
     private final GuildMember guildMember;
-    private RoundRectangle2D parentShape;
 
     private ShapeIntersectCallback shapeIntersectCallback;
-
 
     private final Coords coords;
     private final Dimension dim;
     private MissionMarker[] hiddenMarkers;
+
+    private static final int ROUNDING = 15;
     public DetailPanel(
             GuildMember member,
             Mission mission,
@@ -157,6 +157,7 @@ class DetailPanel extends JPanel implements Runnable{
             ShapeIntersectCallback shapeIntersectCallback,
             Runnable unsetFlag
     ) {
+        super(dim, ROUNDING, color);
         this.guildMember = member;
         this.mission = mission;
         this.shapeIntersectCallback = shapeIntersectCallback;
@@ -166,10 +167,6 @@ class DetailPanel extends JPanel implements Runnable{
 
         Font infoFont = new Font("Britannic Bold", Font.PLAIN, 12);
         Font timerFont = new Font("Broadway", Font.BOLD, 20);
-
-        this.setOpaque(false);
-        this.setBackground(color);
-        this.setPreferredSize(new Dimension(dim.width, dim.height));
 
         this.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -317,23 +314,7 @@ class DetailPanel extends JPanel implements Runnable{
     @Override
     public void addNotify() {
         super.addNotify();
-
-        this.parentShape = new RoundRectangle2D.Float(getX(), getY(), getWidth(), getHeight(), 15, 15);
-        this.hiddenMarkers = shapeIntersectCallback.onShapeIntercept(parentShape);
-    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        Graphics2D g2d = (Graphics2D) g.create();
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        RoundRectangle2D mainPanel = new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 15, 15);
-
-        g2d.setColor(getBackground());
-        g2d.fill(mainPanel);
-        g2d.dispose();
+        this.hiddenMarkers = shapeIntersectCallback.onShapeIntercept(new RoundRectangle2D.Float(getX(), getY(), getWidth(), getHeight(), ROUNDING, ROUNDING));
     }
 
     @Override
