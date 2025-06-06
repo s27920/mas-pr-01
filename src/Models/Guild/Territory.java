@@ -38,7 +38,6 @@ public class Territory extends SuperObject {
           new Coords(611, 431),
           new Coords(496, 191),
           new Coords(538, 127),
-          new Coords(645, 143),
           new Coords(568, 61),
           new Coords(619, 263)
     };
@@ -70,5 +69,9 @@ public class Territory extends SuperObject {
 
     public Coords getTerritoryCoordinates() {
         return territoryCoordinates;
+    }
+
+    public String getTerritoryName() {
+        return territoryName;
     }
 }

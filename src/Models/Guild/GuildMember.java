@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 
 public class GuildMember extends Wizard {
     private final LocalDate joinedDate;
@@ -37,7 +38,7 @@ public class GuildMember extends Wizard {
 
     }
 
-    public GuildMember(String name, Set<KnownSpell> knownSpells, Set<Ownership> ownedDomiciles, Set<SpellTome> ownedTomes, int chosenIcon, LocalDate joinedDate, Guild guild, GuildRank rank, MemberState memberState, Set<MissionAssignment> assignments) {
+    public GuildMember(String name, SortedSet<KnownSpell> knownSpells, Set<Ownership> ownedDomiciles, Set<SpellTome> ownedTomes, int chosenIcon, LocalDate joinedDate, Guild guild, GuildRank rank, MemberState memberState, Set<MissionAssignment> assignments) {
         super(name, knownSpells, ownedDomiciles, ownedTomes, chosenIcon);
         this.joinedDate = joinedDate;
         this.guild = guild;
@@ -105,4 +106,8 @@ public class GuildMember extends Wizard {
                 ", assignments=" + assignments +
                 '}';
     }
+
+
 }
+
+

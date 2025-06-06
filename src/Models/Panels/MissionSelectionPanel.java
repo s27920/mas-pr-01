@@ -2,15 +2,20 @@ package Models.Panels;
 
 import Models.Guild.GuildMember;
 import Models.Guild.MemberState;
+import Models.Magic.KnownSpell;
 import Models.Magic.Spell;
 import Models.Mission.Mission;
 import Models.Util.ColorUtils;
+import Models.Util.FontUtils;
 import Models.Util.GenericJPanelCallback;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
 
 public class MissionSelectionPanel extends JPanel {
@@ -33,11 +38,16 @@ public class MissionSelectionPanel extends JPanel {
     private final Runnable confirmCallback;
 
     private final ImagePanel clippedImagePanel;
-    private final JLabel missionNameLabel;
-    private final JLabel missionDescriptionLabel;
     private final JLabel missionDifficultyLabel;
-    private final JPanel missionRequirementsScrollablePanel;
+    private final JTextArea missionDescriptionArea;
+    private final JPanel missionRequiredSpellPanel;
+    private final GridBagConstraints spellPanelGbc;
+
+
+    private final JLabel missionNameLabel;
     private final JPanel missionTextDetailPanels;
+    private final JLabel missionAreaLabel;
+
 
     private final int SCROLL_BAR_WIDTH = 8;
     private final double textDescriptionPanelHeight;
@@ -63,13 +73,24 @@ public class MissionSelectionPanel extends JPanel {
         this.guildMemberToPanelMapping = new HashMap<>();
 
         JPanel memberSelectionPanel = new JPanel();
-        JPanel missionDetailsPanel = new JPanel();
+        JPanel missionDetailsPanel = new JPanel(new BorderLayout());
+        missionDetailsPanel.setBackground(new Color(50, 43, 56));
+
+
+        JScrollPane missionScrollPane = new JScrollPane();
+        missionScrollPane.setBackground(new Color(50, 43, 56));
+        JPanel missionScrollPanel = new JPanel(new BorderLayout());
+        missionScrollPane.setViewportView(missionScrollPanel);
+        missionScrollPanel.setBackground(new Color(50, 43, 56));
+        missionScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        missionDetailsPanel.add(missionScrollPane, BorderLayout.CENTER);
+        missionScrollPane.getVerticalScrollBar().setUnitIncrement(10);
+        missionScrollPane.getVerticalScrollBar().setBlockIncrement(50);
+
 
         memberSelectionPanel.setPreferredSize(new Dimension(((int) (WIDTH * 0.5) - SCROLL_BAR_WIDTH), HEIGHT));
         missionDetailsPanel.setPreferredSize(new Dimension(((int) (WIDTH * 0.5) - SCROLL_BAR_WIDTH), HEIGHT));
 
-        memberSelectionPanel.setBackground(Color.RED);
-        missionDetailsPanel.setBackground(Color.GREEN);
 
         this.add(memberSelectionPanel, BorderLayout.WEST);
         this.add(missionDetailsPanel, BorderLayout.EAST);
@@ -81,9 +102,6 @@ public class MissionSelectionPanel extends JPanel {
 
         selectedPanel.setPreferredSize(new Dimension(((int) (WIDTH * 0.5)), ((int) (HEIGHT * 0.3))));
         listPanel.setPreferredSize(new Dimension(((int) (WIDTH * 0.5)), ((int) (HEIGHT * 0.7))));
-
-        selectedPanel.setBackground(Color.BLUE);
-        listPanel.setBackground(Color.MAGENTA);
 
         memberSelectionPanel.add(selectedPanel);
         memberSelectionPanel.add(listPanel);
@@ -97,7 +115,6 @@ public class MissionSelectionPanel extends JPanel {
         scrollPane.getVerticalScrollBar().setUnitIncrement(10);
         scrollPane.getVerticalScrollBar().setBlockIncrement(50);
 
-
         listPanel.setLayout(new BorderLayout());
         listPanel.add(scrollPane, BorderLayout.CENTER);
 
@@ -105,12 +122,107 @@ public class MissionSelectionPanel extends JPanel {
 
         initPlaceHolders();
 
-        missionDetailsPanel.setBackground(Color.BLUE);
-        missionDetailsPanel.setLayout(new BorderLayout());
 
-        JPanel buttonPanel = new JPanel();
 
-        buttonPanel.setLayout(new GridLayout(1, 2, 0, 100));
+        // top panel set-up (mission difficulty, area and image)
+
+        JPanel imageHolderPanel = new JPanel(new BorderLayout());
+        imageHolderPanel.setBackground(new Color(50, 43, 56));
+
+
+        missionAreaLabel = new JLabel();
+        missionAreaLabel.setFont(FontUtils.readFontFromFile("resources/Jomhuria-Regular.ttf", 32f));
+        missionAreaLabel.setForeground(new Color(235, 227, 196));
+
+        clippedImagePanel = new ImagePanel("resources/world-map.jpg");
+        clippedImagePanel.setPreferredSize(new Dimension(((int) (WIDTH * 0.5)), ((int) ((WIDTH * 0.5) / 1.66))));
+
+        missionDifficultyLabel = new JLabel();
+        missionDifficultyLabel.setFont(FontUtils.readFontFromFile("resources/Jomhuria-Regular.ttf", 32f));
+        missionDifficultyLabel.setForeground(new Color(195, 195, 195));
+
+        imageHolderPanel.setPreferredSize(new Dimension(((int) (WIDTH * 0.5)), ((int) ((WIDTH * 0.5) / 1.66))));
+        imageHolderPanel.add(missionAreaLabel, BorderLayout.NORTH);
+        imageHolderPanel.add(clippedImagePanel, BorderLayout.CENTER);
+        imageHolderPanel.add(missionDifficultyLabel, BorderLayout.SOUTH);
+        imageHolderPanel.setBorder(BorderFactory.createEmptyBorder(0, 33,0,33));
+
+        missionScrollPanel.add(imageHolderPanel, BorderLayout.NORTH);
+        // top panel end
+
+
+        // center panel set-up
+        JPanel missionPanel = new JPanel(new BorderLayout());
+        missionPanel.setBackground(new Color(50, 43, 56));
+
+        missionPanel.setPreferredSize(new Dimension(((int) (WIDTH * 0.5)), (int) (HEIGHT * 0.92)));
+        missionPanel.setBackground(new Color(50, 43, 56));
+        missionScrollPanel.add(missionPanel, BorderLayout.CENTER);
+
+        // contains mission title and description
+        missionTextDetailPanels = new JPanel(new BorderLayout());
+        missionDescriptionArea = new JTextArea();
+        missionDescriptionArea.setLineWrap(true);
+        missionDescriptionArea.setWrapStyleWord(true);
+        missionDescriptionArea.setEditable(false);
+        missionDescriptionArea.setFont(FontUtils.readFontFromFile("resources/Jomhuria-Regular.ttf", 20f));
+        missionDescriptionArea.setBackground(new Color(50, 43, 56));
+        missionDescriptionArea.setForeground(new Color(195, 195, 195));
+
+
+        missionNameLabel = new JLabel();
+        missionNameLabel.setFont(FontUtils.readFontFromFile("resources/Jomhuria-Regular.ttf", 32f));
+        missionNameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        missionNameLabel.setForeground(new Color(195, 195, 195));
+
+
+        JPanel textWrapperPanel = new JPanel();
+        textWrapperPanel.setLayout(new BoxLayout(textWrapperPanel, BoxLayout.Y_AXIS));
+        textWrapperPanel.setPreferredSize(new Dimension(-1, 300)); // TODO make this calculated dynamically
+        textWrapperPanel.setBackground(new Color(50, 43, 56));
+
+
+        missionDescriptionArea.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        textWrapperPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        textWrapperPanel.add(missionNameLabel);
+        textWrapperPanel.add(missionDescriptionArea);
+
+        missionTextDetailPanels.add(textWrapperPanel, BorderLayout.NORTH);
+
+
+        // spell list set-up
+        missionRequiredSpellPanel = new JPanel(new GridBagLayout());
+        missionRequiredSpellPanel.setBackground(Color.RED);
+        spellPanelGbc = new GridBagConstraints();
+        spellPanelGbc.insets = new Insets(1,0,1,0);
+        spellPanelGbc.gridy = 0;
+        spellPanelGbc.gridx = 0;
+        spellPanelGbc.weightx = 1.0;
+        spellPanelGbc.weighty = 0.0;
+        spellPanelGbc.anchor = GridBagConstraints.NORTH;
+        spellPanelGbc.fill = GridBagConstraints.HORIZONTAL;
+
+        for (int i = 0; i < 4; i++) {
+            spellPanelGbc.gridy = i;
+            RoundedPanel roundedPanel = new RoundedPanel(new Dimension(/*-1 doesn't work (does not stretch as predicted in gbc)*/ 50, 50), 10, ColorUtils.genRandomColor());
+            missionRequiredSpellPanel.add(roundedPanel, spellPanelGbc);
+        }
+
+        missionTextDetailPanels.add(missionRequiredSpellPanel, BorderLayout.CENTER);
+        // spell list set-up
+
+
+        missionPanel.add(missionTextDetailPanels, BorderLayout.CENTER);
+
+        textDescriptionPanelHeight = 1.0; //setup because they were final so it's needed
+
+        // center panel end
+
+
+
+        // bottom panel set-up start
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 0, 100));
 
         JButton confirmButton = new JButton("confirm");
         JButton cancelButton = new JButton("cancel");
@@ -120,7 +232,7 @@ public class MissionSelectionPanel extends JPanel {
 
         confirmButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         cancelButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        
+
         confirmButton.setPreferredSize(new Dimension(-1, 30));
 
         cancelButton.addMouseListener(new MouseAdapter() {
@@ -138,6 +250,9 @@ public class MissionSelectionPanel extends JPanel {
                 if (selectedMemberPointer > 1){
                     for (int i = 0; i < selectedMemberPointer; i++) {
                         selectedMembers[i].getKnownSpells().forEach(s -> {
+//                            if (requiredSpells.size() == 0){
+//                                return;
+//                            }
                             requiredSpells.remove(s.getSpell()); // TODO perhaps add a short circuit here?
                         });
                     }
@@ -165,77 +280,15 @@ public class MissionSelectionPanel extends JPanel {
                     System.out.println("team too small");
                 }
                 resetPanels();
-                }
+            }
         });
 
         buttonPanel.setPreferredSize(new Dimension(((int) (WIDTH * 0.5)), (int) (HEIGHT * 0.08)));
-        missionDetailsPanel.add(buttonPanel, BorderLayout.SOUTH);
+        missionScrollPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        JPanel missionPanel = new JPanel();
-        missionPanel.setPreferredSize(new Dimension(((int) (WIDTH * 0.5)), (int) (HEIGHT * 0.92)));
-        missionDetailsPanel.add(missionPanel, BorderLayout.NORTH);
-        missionPanel.setLayout(new BorderLayout());
+        // bottom panel set-up end
 
-        JPanel imageHolderPanel = new JPanel(new BorderLayout());
-
-        JLabel label = new JLabel("Mission area", SwingConstants.CENTER);
-
-        clippedImagePanel = new ImagePanel("resources/world-map.jpg");
-        clippedImagePanel.setPreferredSize(new Dimension(((int) (WIDTH * 0.5)), ((int) ((WIDTH * 0.5) / 1.66))));
-
-        missionPanel.add(imageHolderPanel, BorderLayout.NORTH);
-        imageHolderPanel.setPreferredSize(new Dimension(((int) (WIDTH * 0.5)), ((int) ((WIDTH * 0.5) / 1.66))));
-        imageHolderPanel.add(label, BorderLayout.NORTH);
-        imageHolderPanel.add(clippedImagePanel, BorderLayout.CENTER);
-
-        missionTextDetailPanels = new JPanel();
-        missionTextDetailPanels.setPreferredSize(new Dimension(((int) (WIDTH * 0.5)), (int) ((HEIGHT * 0.92) - ((WIDTH * 0.5) / 1.66))));
-        missionTextDetailPanels.setBackground(Color.ORANGE);
-        missionPanel.add(missionTextDetailPanels, BorderLayout.SOUTH);
-
-        JPanel textDescriptionPanel = new JPanel();
-
-        textDescriptionPanelHeight = 0.30;
-        textDescriptionPanel.setPreferredSize(new Dimension(missionTextDetailPanels.getPreferredSize().width, ((int) (missionTextDetailPanels.getPreferredSize().height * textDescriptionPanelHeight))));
-        textDescriptionPanel.setLayout(new BorderLayout());
-        textDescriptionPanel.setBackground(Color.PINK);
-        missionTextDetailPanels.add(textDescriptionPanel, BorderLayout.NORTH);
-
-        missionNameLabel = new JLabel();
-        missionDescriptionLabel = new JLabel();
-        missionDifficultyLabel = new JLabel();
-
-        textDescriptionPanel.add(missionNameLabel, BorderLayout.NORTH);
-        textDescriptionPanel.add(missionDescriptionLabel, BorderLayout.CENTER);
-        textDescriptionPanel.add(missionDifficultyLabel, BorderLayout.SOUTH);
-
-        missionNameLabel.setForeground(Color.BLACK);
-        missionDescriptionLabel.setForeground(Color.BLACK);
-        missionDifficultyLabel.setForeground(Color.BLACK);
-
-        int panelWidth = missionTextDetailPanels.getPreferredSize().width;
-        int panelHeight = (int) (missionTextDetailPanels.getPreferredSize().height * (1 - textDescriptionPanelHeight) - 48);
-
-        Dimension dim = new Dimension(panelWidth, panelHeight);
-
-        JPanel missionRequirementsPanel = new JPanel(new BorderLayout());
-        missionRequirementsPanel.setMaximumSize(dim);
-        missionRequirementsPanel.setPreferredSize(dim);
-        missionTextDetailPanels.add(missionRequirementsPanel, BorderLayout.SOUTH);
-
-        JScrollPane missionRequirementsScrollPane = new JScrollPane();
-        missionRequirementsPanel.add(missionRequirementsScrollPane, BorderLayout.CENTER);
-
-        missionRequirementsScrollablePanel = new JPanel();
-
-        missionRequirementsScrollPane.setViewportView(missionRequirementsScrollablePanel);
-        missionRequirementsScrollablePanel.setLayout(new BoxLayout(missionRequirementsScrollablePanel, BoxLayout.Y_AXIS));
-        missionRequirementsScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        missionRequirementsScrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-
-        missionRequirementsScrollPane.getVerticalScrollBar().setUnitIncrement(10);
-        missionRequirementsScrollPane.getVerticalScrollBar().setBlockIncrement(50);
-    }
+        }
 
     public void setMissionDispatcher(GuildMember missionDispatcher) {
         this.missionDispatcher = missionDispatcher;
@@ -263,7 +316,7 @@ public class MissionSelectionPanel extends JPanel {
     public void populateMemberSelectionList(){
         for (GuildMember member : missionDispatcher.getValidGuildMembers()) {
             if (!guildMemberToPanelMapping.containsKey(member)){
-                GuildMemberSelectionTile comp = new GuildMemberSelectionTile(WIDTH, (panel) -> {
+                GuildMemberSelectionTile comp = new GuildMemberSelectionTile(member, WIDTH, (panel) -> {
                 int index;
                 if ((index = findMemberIndex(member)) != -1) {
                     removeComponentFromMembers(((SelectedMemberPanel) selectedMemberPanels[index]));
@@ -342,7 +395,11 @@ public class MissionSelectionPanel extends JPanel {
 
     public void setSelectedMission(Mission selectedMission) {
         this.selectedMission = selectedMission;
+        missionAreaLabel.setText(String.format("mission area: %s", selectedMission.getTerritory().getTerritoryName()));
+        missionAreaLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
+        missionDifficultyLabel.setText(String.format("difficulty: %s", selectedMission.getDifficulty().name())); //TODO seems to not actually be doing it's job
+        missionDifficultyLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         double xw = 720;
         double yh = 480;
@@ -382,19 +439,13 @@ public class MissionSelectionPanel extends JPanel {
             y1 = Math.max(0, imageHeight - zoomHeight);
         }
 
-        missionNameLabel.setText(selectedMission.getName());
-        missionNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-        missionDescriptionLabel.setText(selectedMission.getDescription());
-        missionDescriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-        missionDifficultyLabel.setText(selectedMission.getDifficulty().name());
-        missionDifficultyLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        missionNameLabel.setText(String.format("mission title: %s", selectedMission.getName()));
+        missionDescriptionArea.setText(selectedMission.getDescription());
 
         selectedMission.getRequiredSpells().forEach((s)->{
-            int panelWidth = missionTextDetailPanels.getPreferredSize().width;
-            int panelHeight = (int) ((missionTextDetailPanels.getPreferredSize().height * (1 - textDescriptionPanelHeight) - 48) * 0.333333);
-            missionRequirementsScrollablePanel.add(new MissionRequirementTile(new Dimension(panelWidth, panelHeight), s));
+            RoundedPanel roundedPanel = new RoundedPanel(new Dimension(/*-1 doesn't work (does not stretch as predicted in gbc)*/ 50, 50), 10, ColorUtils.genRandomColor());
+//            missionRequiredSpellPanel.add(roundedPanel, spellPanelGbc);
+//            spellPanelGbc.gridy++;
         });
 
         clippedImagePanel.setClip(x1, y1, x2, y2);
@@ -429,11 +480,12 @@ public class MissionSelectionPanel extends JPanel {
     }
 }
 
-class MissionRequirementTile extends JPanel{
+class MissionRequirementTile extends RoundedPanel{
 
     private final JLabel spellLabel;
     private Spell spell;
     public MissionRequirementTile(Dimension dim, Spell spell) {
+        super(5);
         this.setPreferredSize(dim);
         this.setMaximumSize(dim);
         this.setMinimumSize(dim);
@@ -458,16 +510,109 @@ class GuildMemberSelectionTile extends JPanel{
     private Color color;
     private final GenericJPanelCallback selectCallback;
 
-    public GuildMemberSelectionTile(int width, GenericJPanelCallback callback) {
+    public GuildMemberSelectionTile(GuildMember member, int width, GenericJPanelCallback callback) {
         this.thisPanel = this;
         this.selectCallback = callback;
 
         int availableWidth = (int)(width * 0.5) - 16 - 10;
-        this.setPreferredSize(new Dimension(availableWidth - 4, 100 - 4));
-        this.color = new Color(65,65,65);
+        this.setPreferredSize(new Dimension(availableWidth - 4, 120 - 4));
+        this.color = new Color(108,108,108);
         this.setBackground(color);
         this.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2));
         this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        this.setLayout(new BorderLayout());
+
+        JPanel lPanel = new JPanel();
+        lPanel.setBackground(ColorUtils.transparent);
+        lPanel.setPreferredSize(new Dimension(((int) (this.getPreferredSize().width * 0.42)), this.getPreferredSize().height));
+
+        JPanel rPanel = new JPanel();
+        rPanel.setBackground(ColorUtils.transparent);
+        rPanel.setPreferredSize(new Dimension(((int) (this.getPreferredSize().width * 0.58)), this.getPreferredSize().height));
+
+        JLabel bestLabel = new JLabel("Best spells", SwingConstants.LEFT);
+        bestLabel.setPreferredSize(new Dimension(((int) (this.getPreferredSize().width * 0.58)), 32));
+
+        bestLabel.setFont(FontUtils.readFontFromFile("resources/Jomhuria-Regular.ttf", 32f));
+
+        bestLabel.setForeground(new Color(195,195,195));
+
+
+        rPanel.setLayout(new GridBagLayout());
+        GridBagConstraints rgbc = new GridBagConstraints();
+
+        rgbc.gridx = 0;
+        rgbc.gridy = 0;
+        rgbc.weightx = 1.0;
+        rgbc.weighty = 0.0;
+        rgbc.fill = GridBagConstraints.HORIZONTAL;
+        rgbc.anchor = GridBagConstraints.NORTH;
+        rgbc.insets = new Insets(1, 0, 1, 0);
+
+        rPanel.add(bestLabel, rgbc);
+
+        Font labelFont = FontUtils.readFontFromFile("resources/Jomhuria-Regular.ttf", 24f);
+
+        Color panelColor = new Color(94,94,94);
+        Dimension paddingDim = new Dimension(-1, 1);
+
+        KnownSpell[] knownSpells = member.getKnownSpells().toArray(new KnownSpell[0]);
+        for (int i1 = 0; i1 < Math.min(3, member.getKnownSpells().size()); i1++) {
+            rgbc.gridy++;
+
+            Dimension panelSize = new Dimension(((int) (this.getPreferredSize().width * 0.58)), 20);
+            RoundedPanel panel = new RoundedPanel(panelSize, 5, panelColor);
+            panel.setLayout(new BorderLayout());
+
+            JLabel spellNameLabel = new JLabel(knownSpells[i1].getSpell().getName(), SwingConstants.RIGHT);
+            JLabel spellLevelLabel = new JLabel(String.format("lvl. %d", knownSpells[i1].getMasteryLevel()), SwingConstants.LEFT);
+
+            spellNameLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+            spellLevelLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
+
+            spellLevelLabel.setFont(labelFont);
+            spellNameLabel.setFont(labelFont);
+
+            Dimension preferredSize = new Dimension(((int) (this.getPreferredSize().width * 0.29) /* (0.58 / 2) */), 20);
+            spellNameLabel.setPreferredSize(preferredSize);
+            spellLevelLabel.setPreferredSize(preferredSize);
+
+            panel.add(spellNameLabel, BorderLayout.WEST);
+            panel.add(spellLevelLabel, BorderLayout.EAST);
+
+            rPanel.add(panel, rgbc);
+        }
+
+        rgbc.gridy++;
+        rgbc.weighty = 1.0;
+        rgbc.fill = GridBagConstraints.BOTH;
+        rgbc.insets = new Insets(0, 0, 0, 0);
+        JPanel glue = new JPanel();
+        glue.setBackground(ColorUtils.transparent);
+        rPanel.add(glue, rgbc);
+
+        lPanel.setLayout(new GridBagLayout());
+        GridBagConstraints lgbc = new GridBagConstraints();
+
+        lgbc.gridx = 0;
+        lgbc.gridy = 0;
+        lgbc.weightx = 0.0;
+        lgbc.weighty = 0.0;
+        lgbc.fill = GridBagConstraints.BOTH;
+        lgbc.anchor = GridBagConstraints.NORTH;
+
+        ImagePanel panel = new ImagePanel(member.getChosenIcon());
+        panel.setBackground(ColorUtils.transparent);
+        panel.setPreferredSize(new Dimension(77,77));
+        lPanel.add(panel, lgbc);
+
+        lgbc.gridy = 1;
+        JLabel wizardNameUser = new JLabel(member.getName(), SwingConstants.CENTER);
+        wizardNameUser.setFont(labelFont);
+        lPanel.add(wizardNameUser, lgbc);
+
+        this.add(lPanel, BorderLayout.WEST);
+        this.add(rPanel, BorderLayout.EAST);
 
         this.addMouseListener(new MouseAdapter() {
             @Override
@@ -538,7 +683,6 @@ class PlaceHolderPanel extends JPanel implements Models.Util.Iterable {
         this.setPreferredSize(dimension);
         Color color = new Color(233, 224, 210);
         this.setLayout(new BorderLayout());
-
         JLabel label = new JLabel("+", SwingConstants.CENTER);
         label.setFont(new Font("Britannic Bold", Font.BOLD, 25));
         label.setForeground(new Color(54, 0, 0));

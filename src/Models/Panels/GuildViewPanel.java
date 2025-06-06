@@ -10,9 +10,11 @@ import Models.Util.ShapeIntersectCallback;
 import Models.Util.SuperObject;
 
 import javax.swing.*;
+import javax.swing.plaf.synth.SynthOptionPaneUI;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.RoundRectangle2D;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -37,6 +39,7 @@ public class GuildViewPanel extends JPanel {
     private final JPanel thisPanel;
 
     public GuildViewPanel(MissionSelectionCallback missionSelectionCallback) {
+
         this.thisPanel = this;
         this.callback = missionSelectionCallback;
         JPanel labelPanel = new JPanel(new BorderLayout());
@@ -119,6 +122,7 @@ public class GuildViewPanel extends JPanel {
             marker.validateColor();
         }
     }
+
 
     public void setLoggedInMember(GuildMember member){
         this.loggedInMember = member;

@@ -13,8 +13,7 @@ import Models.Util.MissionTimerService;
 import com.formdev.flatlaf.FlatDarkLaf;
 
 import javax.swing.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -31,7 +30,7 @@ public class Main {
         spells.add(spell1);
         spells.add(spell2);
 
-        int n = 23;
+        int n = 22;
 
         Coords[] coords = Territory.getNUniquePois(n);
 
@@ -44,7 +43,7 @@ public class Main {
         missionRewards.add(reward2);
 
         for (int i = 0; i < n; i++) {
-            new Mission(new Territory(String.format("territory %s", i), coords[i]), MissionDifficulty.values()[i%3], String.format("mission %s", i), String.format("mission %s description", i), spells, missionRewards);
+            new Mission(new Territory(String.format("territory %s", i), coords[i]), MissionDifficulty.values()[i%3], String.format("mission %s", i), String.format("Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium  tellus duis convallis. Tempus leo eu aenean sed diam urna tempor....", i), spells, missionRewards);
         }
 
         Guild guild = new Guild("guild 1", "pax quaeritur bello");
@@ -82,6 +81,10 @@ public class Main {
         member6.learnSpell(spell2);
         member6.learnSpell(spell1);
 
+        guild.getMembers().forEach(m->{
+            m.getKnownSpells().forEach(ks-> ks.setMasteryLevel(((int) (Math.random() * 9)) + 1));
+            m.rebuildSortedTree();
+        });
 
         FlatDarkLaf.setup();
 

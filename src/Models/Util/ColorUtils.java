@@ -3,6 +3,8 @@ package Models.Util;
 import java.awt.*;
 
 public class ColorUtils {
+
+    public static final Color transparent = new Color(0,0,0,0);
     public static Color darkenColor(Color color, int darkenBy){
         return new Color(Math.max(color.getRed() - darkenBy, 0), Math.max(color.getGreen() - darkenBy, 0), Math.max(color.getBlue() - darkenBy, 0), color.getAlpha());
     }

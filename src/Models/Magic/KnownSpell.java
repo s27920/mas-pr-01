@@ -3,7 +3,7 @@ package Models.Magic;
 import Models.Util.SuperObject;
 import Models.Wizard;
 
-public class KnownSpell extends SuperObject {
+public class KnownSpell extends SuperObject implements Comparable<KnownSpell> {
     private Spell spell;
     private Wizard wizard;
 
@@ -17,12 +17,26 @@ public class KnownSpell extends SuperObject {
         wizard.addKnownSpell(this);
     }
 
+    public void setMasteryLevel(int masteryLevel) {
+        this.masteryLevel = masteryLevel;
+//        wizard.removeFromKnownSpells(this);
+//        wizard.addKnownSpell(this);
+    }
+
     public Spell getSpell() {
         return spell;
     }
 
-    // /successRate: double
     public double getSuccessRate(){
         return masteryLevel / 10.0;
+    }
+
+    @Override
+    public int compareTo(KnownSpell o) {
+        return Integer.compare(o.masteryLevel, this.masteryLevel);
+    }
+
+    public int getMasteryLevel() {
+        return masteryLevel;
     }
 }

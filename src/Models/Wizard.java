@@ -8,12 +8,11 @@ import Models.RealEstate.Ownership;
 import Models.Util.SuperObject;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class Wizard extends SuperObject {
     private String name;
-    private Set<KnownSpell> knownSpells;
+    private SortedSet<KnownSpell> knownSpells;
     private Set<Ownership> ownedDomiciles;
     private Set<SpellTome> ownedTomes;
     private int chosenIcon;
@@ -21,12 +20,16 @@ public class Wizard extends SuperObject {
     public Wizard(String name, int chosenIcon) {
         this.name = name;
         this.chosenIcon = chosenIcon;
-        this.knownSpells = new HashSet<>();
+        this.knownSpells = new TreeSet<>(
+                Comparator.comparingInt(KnownSpell::getMasteryLevel)
+                        .reversed()
+                        .thenComparing(ks -> ks.getSpell().getName())
+        );
         this.ownedDomiciles = new HashSet<>();
         this.ownedTomes = new HashSet<>();
     }
 
-    public Wizard(String name, Set<KnownSpell> knownSpells, Set<Ownership> ownedDomiciles, Set<SpellTome> ownedTomes, int chosenIcon) {
+    public Wizard(String name, SortedSet<KnownSpell> knownSpells, Set<Ownership> ownedDomiciles, Set<SpellTome> ownedTomes, int chosenIcon) {
         this.name = name;
         this.knownSpells = knownSpells;
         this.ownedDomiciles = ownedDomiciles;
@@ -39,11 +42,14 @@ public class Wizard extends SuperObject {
     }
 
     public void learnSpell(Spell spell){
-        knownSpells.add(new KnownSpell(this, spell, 1));
+        this.knownSpells.add(new KnownSpell(this, spell, 1));
     }
 
     public void addKnownSpell(KnownSpell spell){
         knownSpells.add(spell);
+    }
+    public void removeFromKnownSpells(KnownSpell spell){
+        knownSpells.remove(spell);
     }
 
     public void addToOwned(Ownership ownership) {
@@ -69,5 +75,11 @@ public class Wizard extends SuperObject {
 
     public String getName() {
         return name;
+    }
+
+    public void rebuildSortedTree() {
+        SortedSet<KnownSpell> sortedSet = new TreeSet<>();
+        sortedSet.addAll(this.knownSpells);
+        this.knownSpells = sortedSet;
     }
 }
