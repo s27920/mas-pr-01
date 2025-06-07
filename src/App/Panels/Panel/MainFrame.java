@@ -24,10 +24,11 @@ public class MainFrame extends JFrame {
         );
 
         GuildViewPanel guildViewPanel = new GuildViewPanel(
-                (member, mission)->{
+                (member, mission, runnable)->{
                     missionSelectionPanel.setMissionDispatcher(member);
                     missionSelectionPanel.setSelectedMission(mission);
                     missionSelectionPanel.populateMemberSelectionList();
+                    missionSelectionPanel.setOnMissionCompletionCallback(runnable);
                     cardLayout.next(mainPanel);
                 },
                 ()->{

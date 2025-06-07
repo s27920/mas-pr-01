@@ -180,7 +180,6 @@ public class DetailPanel extends RoundedPanel implements Runnable {
                     missionSelectionCallback.run(()-> {
                         boolHolder[0] = true;
                     });
-                    System.out.println(boolHolder[0]);
                     if (!boolHolder[0]){
                         unsetFlag.run();
                         thisPanel.setVisible(false);

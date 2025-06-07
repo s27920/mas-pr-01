@@ -65,6 +65,8 @@ public class MissionSelectionPanel extends JPanel {
 
     private final HashMap<GuildMember, GuildMemberSelectionTile> guildMemberToPanelMapping;
 
+    private Runnable onMissionCompletionCallback;
+
 
     public MissionSelectionPanel(
             Runnable cancelCallback,
@@ -297,9 +299,8 @@ public class MissionSelectionPanel extends JPanel {
                 selectedMission.startMission(selectedMission.getMissionCompletionTime(), () -> {
                     for (GuildMember guildMember : guildMembers) {
                         guildMember.setMemberState(MemberState.ON_STANDBY);
-                        System.out.println("completed mission");
                     }
-                    confirmCallback.run();
+                    onMissionCompletionCallback.run();
                 });
                 cancelCallback.run();
                 System.out.println("Start mission");
@@ -576,6 +577,10 @@ public class MissionSelectionPanel extends JPanel {
             missionRequiredSpellPanel.remove(requiredSpell);
         }
         spellPanelGbc.gridy = 0;
+    }
+
+    public void setOnMissionCompletionCallback(Runnable onMissionCompletionCallback) {
+        this.onMissionCompletionCallback = onMissionCompletionCallback;
     }
 }
 

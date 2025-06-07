@@ -119,11 +119,12 @@ public class MissionMarker extends JPanel {
 
     }
 
-    public boolean isShowedError() {
-        return showedError;
+    public void setBorderColor(Color borderColor) {
+        this.borderColor = borderColor;
     }
-    public void flipShowedError(){
-        showedError = !showedError;
+
+    public Color getBorderColor() {
+        return borderColor;
     }
 
     public Mission getMission() {

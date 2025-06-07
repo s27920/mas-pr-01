@@ -97,7 +97,12 @@ public class GuildViewPanel extends JPanel {
                         onErrorCallback.run();
                         showError("Not enough guild members available! At least 2 members must be on standby to start a mission. Please wait for a mission to complete");
                     } else {
-                        missionSelectionCallback.onMissionSelect(loggedInMember, mission);
+                        missionSelectionCallback.onMissionSelect(loggedInMember, mission, () -> {
+                            markers[finalI].setBorderColor(Color.GRAY);
+                            markers[finalI].revalidate();
+                            markers[finalI].repaint();
+                            backgroundImagePanel.repaint();
+                        });
                     }
                 }
             };
