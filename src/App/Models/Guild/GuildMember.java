@@ -47,7 +47,8 @@ public class GuildMember extends Wizard {
     }
 
     public void assignNewMission(Mission mission){
-        this.assignments.add(new MissionAssignment(this, mission));
+        MissionAssignment assignment = new MissionAssignment(this, mission);
+        this.assignments.add(assignment);
         this.memberState = MemberState.IN_MISSION;
     }
 

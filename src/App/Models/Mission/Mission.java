@@ -3,6 +3,7 @@ package App.Models.Mission;
 import App.Models.Guild.GuildMember;
 import App.Models.Guild.MemberState;
 import App.Models.Guild.Territory;
+import App.Models.Magic.KnownSpell;
 import App.Models.Magic.RequiredSpell;
 import App.Models.Magic.Spell;
 import App.Util.MissionTimerService;
@@ -12,7 +13,7 @@ import java.util.*;
 
 public class Mission extends SuperObject {
     private Territory territory;
-    private MissionDifficulty difficulty;
+    private final MissionDifficulty difficulty;
     private MissionStatus status;
 
     private Set<MissionReward> rewards;
@@ -22,10 +23,9 @@ public class Mission extends SuperObject {
     private String name;
     private String description;
 
+    public static final long MISSION_COMPLETION_TIME_MILLIS_BASELINE = 15000;
+    private long missionCompletionTime;
     private long startTimeMillis;
-    private long missionCompletionTimeMillis;
-
-    private final Set<Spell> requiredSpells;
 
     public Mission(Territory territory, MissionDifficulty difficulty, String name, String description, Set<Spell> requiredSpells, Set<MissionReward> rewards) {
         this.rewards = rewards;
@@ -34,15 +34,14 @@ public class Mission extends SuperObject {
         this.requiredSpellsSet = new HashSet<>();
         this.name = name;
         this.description = description;
-        this.requiredSpells = new HashSet<>();
         this.status = MissionStatus.CREATED;
         this.assignments = new HashSet<>();
 
         addToRequiredSpells(requiredSpells.toArray(new Spell[0]));
     }
 
-    public void startMission(Runnable callback){
-        MissionTimerService.getInstance().registerMission(this, callback);
+    public void startMission(long missionCompletionTimeMillis, Runnable callback){
+        MissionTimerService.getInstance().registerMission(missionCompletionTimeMillis, callback);
         this.status = MissionStatus.IN_PROGRESS;
         this.startTimeMillis = System.currentTimeMillis();
     }
@@ -53,13 +52,6 @@ public class Mission extends SuperObject {
         this.status = MissionStatus.COMPLETED;
     }
 
-    public void setMissionCompletionTimeMillis(long millis){
-        if (millis < 0){
-            throw new IllegalArgumentException(">:( no negative milliseconds");
-        }
-        this.missionCompletionTimeMillis = millis;
-    }
-
     public MissionStatus getStatus() {
         return status;
     }
@@ -68,13 +60,46 @@ public class Mission extends SuperObject {
         return startTimeMillis;
     }
 
-    public long getMissionCompletionTimeMillis() {
-        return missionCompletionTimeMillis;
+    public void calculateMissionCompletionTime() {
+        double difficultyScalar = 1;
+        difficultyScalar += getDifficulty().ordinal() / 4.0;
+
+        Set<Spell> tmpCopySet = new HashSet<>();
+        getRequiredSpellsSet().forEach(ks -> tmpCopySet.add(ks.getRequiredSpell()));
+
+        final HashMap<Spell, Integer> knowsRequiredSpellsMaxLevel = new HashMap<>();
+
+        double spellScalar = 1.0;
+
+        for (MissionAssignment ma : assignments) {
+            for (KnownSpell ks : ma.getGuildMember().getKnownSpells()) {
+                if (tmpCopySet.contains(ks.getSpell())) {
+                    if (knowsRequiredSpellsMaxLevel.containsKey(ks.getSpell())) {
+                        // treat as bonus spell
+                        spellScalar *= 1 - 0.005 * ks.getMasteryLevel();
+                    }
+                    knowsRequiredSpellsMaxLevel.put(ks.getSpell(), ks.getMasteryLevel());
+                } else {
+                    // treat as bonus spell
+                    spellScalar *= 1 - 0.005 * ks.getMasteryLevel();
+                }
+            }
+        }
+
+        // required Spells
+        for (Map.Entry<Spell, Integer> requiredSpellMastery : knowsRequiredSpellsMaxLevel.entrySet()) {
+            spellScalar *= 10.0 / requiredSpellMastery.getValue();
+        }
+
+        this.missionCompletionTime = ((long) (Mission.MISSION_COMPLETION_TIME_MILLIS_BASELINE * difficultyScalar * spellScalar));
     }
 
+    public long getMissionCompletionTime() {
+        return missionCompletionTime;
+    }
 
     public Set<MissionAssignment> getAssignments() {
-        return assignments;
+        return Collections.unmodifiableSet(assignments);
     }
 
     public Territory getTerritory() {
@@ -95,10 +120,6 @@ public class Mission extends SuperObject {
 
     public String getName() {
         return name;
-    }
-
-    public Set<Spell> getRequiredSpells() {
-        return requiredSpells;
     }
 
     public String getDescription() {
@@ -123,13 +144,8 @@ public class Mission extends SuperObject {
 
     public void addToRequiredSpells(Spell... spells){
         for (Spell spell : spells) {
-            System.out.println(spell.getName());
             this.requiredSpellsSet.add(new RequiredSpell(spell, this));
         }
-        System.out.println();
-        System.out.println();
-        System.out.println();
-        System.out.println();
     }
 
     public Set<RequiredSpell> getRequiredSpellsSet() {

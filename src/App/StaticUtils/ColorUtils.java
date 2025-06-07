@@ -7,6 +7,7 @@ public class ColorUtils {
     public static final Color TRANSPARENT = new Color(0,0,0,0);
     public static final Color CARBON = new Color(35,35,35);
     public static final Color CREAM = new Color(235, 227, 196);
+    public static final Color DARK_PURPLE = new Color(50, 43, 56);
 
 
     public static Color darkenColor(Color color, int darkenBy){

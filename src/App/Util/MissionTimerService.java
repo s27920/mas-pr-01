@@ -6,7 +6,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class MissionTimerService {
     private static MissionTimerService instance;
@@ -24,8 +23,8 @@ public class MissionTimerService {
         return instance;
     }
 
-    public void registerMission(Mission mission, Runnable callback){
-        executor.schedule(callback, mission.getMissionCompletionTimeMillis(), TimeUnit.MILLISECONDS);
+    public void registerMission(long completionTimeInMillis, Runnable callback){
+        executor.schedule(callback, completionTimeInMillis, TimeUnit.MILLISECONDS);
     }
 
     public void dispose(){

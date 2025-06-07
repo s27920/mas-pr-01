@@ -57,7 +57,7 @@ public class Wizard extends SuperObject {
     }
 
     public Set<KnownSpell> getKnownSpells() {
-        return knownSpells;
+        return Collections.unmodifiableSet(knownSpells);
     }
 
     public void addTome(SpellTome tome){

@@ -4,6 +4,7 @@ import App.Models.Mission.Mission;
 import App.Types.SpellTypePlusValTuple;
 import App.Util.SuperObject;
 
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -90,7 +91,7 @@ public class Spell extends SuperObject {
     }
 
     public Set<KnownSpell> getKnownSpells() {
-        return knownSpells;
+        return Collections.unmodifiableSet(knownSpells);
     }
 
     public void addKnownSpell(KnownSpell spell){

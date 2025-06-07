@@ -1,6 +1,6 @@
 package App.Callbacks;
 
-import App.Panels.MissionMarker;
+import App.Panels.Components.MissionMarker;
 
 import java.awt.*;
 

@@ -17,7 +17,7 @@ public class Territory extends SuperObject {
     private Guild guild;
     private Mission territoryMission;
 
-    public static Coords[] pois = {
+    public final static Coords[] POIS = {
           new Coords(71, 69),
           new Coords(142, 103),
           new Coords(96, 165),
@@ -52,7 +52,7 @@ public class Territory extends SuperObject {
         for (int i = 0; i < n; i++) {
             Coords poi;
             do {
-                poi = pois[((int) (Math.random() * pois.length))];
+                poi = POIS[((int) (Math.random() * POIS.length))];
             } while (selectedPois.contains(poi));
             selectedPois.add(poi);
         }

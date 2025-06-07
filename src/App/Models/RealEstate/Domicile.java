@@ -3,6 +3,7 @@ package App.Models.RealEstate;
 import App.Util.SuperObject;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -26,4 +27,7 @@ public abstract class Domicile extends SuperObject {
         this.ownership.add(ownership);
     }
 
+    public Set<Ownership> getOwnership() {
+        return Collections.unmodifiableSet(ownership);
+    }
 }

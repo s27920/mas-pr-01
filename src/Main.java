@@ -6,7 +6,7 @@ import App.Models.Mission.Mission;
 import App.Models.Mission.MissionDifficulty;
 import App.Models.Mission.MissionReward;
 import App.Models.Mission.MissionRewardType;
-import App.Panels.MainFrame;
+import App.Panels.Panel.MainFrame;
 import App.Types.Coords;
 import App.Util.MissionTimerService;
 import App.Util.SuperObject;
@@ -46,9 +46,9 @@ public class Main {
             new Mission(new Territory(String.format("territory %s", i), coords[i]), MissionDifficulty.values()[i%3], String.format("mission %s", i), "Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium  tellus duis convallis. Tempus leo eu aenean sed diam urna tempor....", spells, missionRewards);
         }
 
-        Guild wizardGuild = new Guild("Wizards", "Vis per laborem");
-        Guild druidGuild = new Guild("Druids", "Gutta cavat lapidem non vi, sed saepe cadendo");
-        Guild warlockGuild = new Guild("Warlocks", "Magna otia caeli");
+        Guild wizardGuild = new Guild("Wizards", "Vis per laborem", 1);
+        Guild druidGuild = new Guild("Druids", "Gutta cavat lapidem non vi, sed saepe cadendo", 3);
+        Guild warlockGuild = new Guild("Warlocks", "Magna otia caeli", 2);
 
         GuildMember wizard1 = new GuildMember("merlin 1", 1, wizardGuild);
         wizard1.getPromoted();

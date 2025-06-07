@@ -4,6 +4,7 @@ import App.Models.RealEstate.Castle;
 import App.Util.SuperObject;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,24 +18,27 @@ public class Guild extends SuperObject {
     private LocalDate creationDate;
     private int reputation;
     private String motto;
+    private final int chosenIcon;
 
 
     // new Guild creation
-    public Guild(String guildName, String motto) {
+    public Guild(String guildName, String motto, int chosenIcon) {
         this.guildName = guildName;
         this.motto = motto;
 
         this.creationDate = LocalDate.now();
         this.reputation = 0;
+        this.chosenIcon = chosenIcon;
 
         this.controlledTerritories = new HashSet<>();
         this.ownedCastles = new HashSet<>();
         this.members = new HashSet<>();
     }
 
-    public Guild(Set<GuildMember> members, String guildName) {
+    public Guild(Set<GuildMember> members, String guildName, int chosenIcon) {
         this.members = members;
         this.guildName = guildName;
+        this.chosenIcon = chosenIcon;
 
         this.controlledTerritories = new HashSet<>();
         this.ownedCastles = new HashSet<>();
@@ -69,6 +73,10 @@ public class Guild extends SuperObject {
         return -1; // TODO implement
     }
     public Set<GuildMember> getMembers() {
-        return members;
+        return Collections.unmodifiableSet(members);
+    }
+
+    public int getChosenIcon() {
+        return chosenIcon;
     }
 }
