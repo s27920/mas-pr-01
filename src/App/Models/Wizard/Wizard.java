@@ -1,7 +1,7 @@
 package App.Models.Wizard;
 
 import App.Models.Magic.KnownSpell;
-import App.Models.Magic.Spell;
+import App.Models.Magic.Spells.Spell;
 import App.Models.Magic.SpellTome;
 import App.Models.RealEstate.Domicile;
 import App.Models.RealEstate.Ownership;

@@ -1,5 +1,6 @@
 package App.Models.Magic;
 
+import App.Models.Magic.Spells.Spell;
 import App.Util.SuperObject;
 import App.Models.Wizard.Wizard;
 

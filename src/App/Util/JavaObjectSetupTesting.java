@@ -3,7 +3,8 @@ package App.Util;
 import App.Models.Guild.Guild;
 import App.Models.Guild.GuildMember;
 import App.Models.Guild.Territory;
-import App.Models.Magic.Spell;
+import App.Models.Magic.RequiredSpell;
+import App.Models.Magic.Spells.*;
 import App.Models.Mission.Mission;
 import App.Models.Mission.MissionDifficulty;
 import App.Models.Mission.MissionReward;
@@ -11,145 +12,131 @@ import App.Models.Mission.MissionRewardType;
 import App.Types.Coords;
 
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 public class JavaObjectSetupTesting {
-    public static void setup(){
-        Set<Spell> spells = new HashSet<>();
-
-        Spell spell = new Spell("fireball");
-        Spell spell1 = new Spell("Healing");
-        Spell spell2 = new Spell("Teleportation");
-
-        spells.add(spell);
-        spells.add(spell1);
-        spells.add(spell2);
+    public static void setup() {
+        Spell[] spellsArr = {
+                new Spell("Lightning bolt", null, null, new DamageSpell(10.0)),
+                new Spell("Leech", null, null, new DamageSpell(10.0), new HealingSpell(15.0)),
+                new Spell("Blessing", null, null, new HealingSpell(8.0), new SupportSpell("gives invincibility")),
+                new Spell("Psio blast", null, null, new DamageSpell(25.0)),
+                new Spell("Fire breath", null, null, new DamageSpell(6.0)),
+                new Spell("Fireball", null, null, new DamageSpell(18.0)),
+                new Spell("Healing", null, null, new HealingSpell(30.0)),
+                new Spell("Lightning strike", null, null, new DamageSpell(21.0)),
+                new Spell("Teleportation", null, null, new SupportSpell("teleport user"))
+        };
 
         int n = 22;
 
         Coords[] coords = Territory.getNUniquePois(n);
 
-        Set<MissionReward> missionRewards = new HashSet<>();
-
-        MissionReward reward1 = new MissionReward(MissionRewardType.COIN, 100);
-        MissionReward reward2 = new MissionReward(MissionRewardType.MAGICAL_RESOURCE, 7);
-
-        missionRewards.add(reward1);
-        missionRewards.add(reward2);
-
-        for (int i = 0; i < n; i++) {
-            new Mission(new Territory(String.format("territory %s", i), coords[i]), MissionDifficulty.values()[i%3], String.format("mission %s", i), "Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium  tellus duis convallis. Tempus leo eu aenean sed diam urna tempor....", spells, missionRewards);
-        }
-
         Guild wizardGuild = new Guild("Wizards", "Vis per laborem", 1);
         Guild druidGuild = new Guild("Druids", "Gutta cavat lapidem non vi, sed saepe cadendo", 3);
         Guild warlockGuild = new Guild("Warlocks", "Magna otia caeli", 2);
 
-        GuildMember wizard1 = new GuildMember("merlin 1", 1, wizardGuild);
-        wizard1.getPromoted();
-        wizard1.getPromoted();
-        wizard1.learnSpell(spell);
-        wizard1.learnSpell(spell2);
-        wizard1.learnSpell(spell1);
-        GuildMember wizard2 = new GuildMember("merlin 2", 3, wizardGuild);
-        wizard2.learnSpell(spell);
-        wizard2.learnSpell(spell2);
-        wizard2.learnSpell(spell1);
-        GuildMember wizard3 = new GuildMember("merlin 3", 1, wizardGuild);
-        wizard3.getPromoted();
-        wizard3.learnSpell(spell);
-        wizard3.learnSpell(spell2);
-        wizard3.learnSpell(spell1);
-        GuildMember wizard4 = new GuildMember("merlin 4", 2, wizardGuild);
-        wizard4.learnSpell(spell);
-        wizard4.learnSpell(spell2);
-        wizard4.learnSpell(spell1);
-        GuildMember wizard5 = new GuildMember("merlin 5", 4, wizardGuild);
-        wizard5.learnSpell(spell);
-        wizard5.learnSpell(spell2);
-        wizard5.learnSpell(spell1);
-        GuildMember wizard6 = new GuildMember("merlin 6", 5, wizardGuild);
-        wizard6.learnSpell(spell);
-        wizard6.learnSpell(spell2);
-        wizard6.learnSpell(spell1);
-        GuildMember wizard7 = new GuildMember("merlin 7", 1, wizardGuild);
-        wizard7.getPromoted();
-        wizard7.learnSpell(spell);
-        wizard7.learnSpell(spell2);
-        wizard7.learnSpell(spell1);
+        Set<MissionReward> missionRewards = new HashSet<>();
+        MissionReward reward1 = new MissionReward(MissionRewardType.COIN, 100);
+        MissionReward reward2 = new MissionReward(MissionRewardType.MAGICAL_RESOURCE, 7);
+        missionRewards.add(reward1);
+        missionRewards.add(reward2);
 
+        for (int i = 0; i < n; i++) {
+            Territory territory = new Territory(String.format("territory %s", i), coords[i], i % 5, i % 2 == 0, i * 100, wizardGuild);
+            MissionDifficulty diff = MissionDifficulty.values()[i % 3];
+            Mission mission = new Mission(territory, diff, String.format("mission %s", i), "Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat. In id cursus mi pretium  tellus duis convallis. Tempus leo eu aenean sed diam urna tempor....");
+            createSpellRequirements(spellsArr, mission);
+        }
 
+        GuildMember[] druidMembersArr = {
+                new GuildMember("druid 1", 1, druidGuild),
+                new GuildMember("druid 2", 3, druidGuild),
+                new GuildMember("druid 3", 1, druidGuild),
+                new GuildMember("druid 4", 2, druidGuild),
+                new GuildMember("druid 5", 4, druidGuild),
+                new GuildMember("druid 6", 5, druidGuild),
+                new GuildMember("druid 7", 1, druidGuild)
+        };
+        druidMembersArr[0].getPromoted();
+        druidMembersArr[0].getPromoted();
+        initializeMembersWithRandomSpells(druidMembersArr, spellsArr);
 
-        GuildMember druid1 = new GuildMember("druid 1", 1, druidGuild);
-        druid1.getPromoted();
-        druid1.getPromoted();
-        druid1.learnSpell(spell);
-        druid1.learnSpell(spell2);
-        druid1.learnSpell(spell1);
-        GuildMember druid2 = new GuildMember("druid 2", 3, druidGuild);
-        druid2.learnSpell(spell);
-        druid2.learnSpell(spell2);
-        druid2.learnSpell(spell1);
-        GuildMember druid3 = new GuildMember("druid 3", 1, druidGuild);
-        druid3.getPromoted();
-        druid3.learnSpell(spell);
-        druid3.learnSpell(spell2);
-        druid3.learnSpell(spell1);
-        GuildMember druid4 = new GuildMember("druid 4", 2, druidGuild);
-        druid4.learnSpell(spell);
-        druid4.learnSpell(spell2);
-        druid4.learnSpell(spell1);
-        GuildMember druid5 = new GuildMember("druid 5", 4, druidGuild);
-        druid5.learnSpell(spell);
-        druid5.learnSpell(spell2);
-        druid5.learnSpell(spell1);
-        GuildMember druid6 = new GuildMember("druid 6", 5, druidGuild);
-        druid6.learnSpell(spell2);
-        druid6.learnSpell(spell);
-        druid6.learnSpell(spell1);
-        GuildMember druid7 = new GuildMember("druid 7", 1, druidGuild);
-        druid7.getPromoted();
-        druid7.learnSpell(spell);
-        druid7.learnSpell(spell2);
-        druid7.learnSpell(spell1);
+        GuildMember[] wizardMembersArr = {
+                new GuildMember("merlin 1", 1, wizardGuild),
+                new GuildMember("merlin 2", 3, wizardGuild),
+                new GuildMember("merlin 3", 1, wizardGuild),
+                new GuildMember("merlin 4", 2, wizardGuild),
+                new GuildMember("merlin 5", 4, wizardGuild),
+                new GuildMember("merlin 6", 5, wizardGuild),
+                new GuildMember("merlin 7", 1, wizardGuild)
+        };
+        wizardMembersArr[0].getPromoted();
+        wizardMembersArr[0].getPromoted();
+        wizardMembersArr[2].getPromoted();
+        wizardMembersArr[6].getPromoted();
+        initializeMembersWithRandomSpells(wizardMembersArr, spellsArr);
 
+        GuildMember[] warlockMembersArr = {
+                new GuildMember("warlock 1", 1, warlockGuild),
+                new GuildMember("warlock 2", 3, warlockGuild),
+                new GuildMember("warlock 3", 1, warlockGuild),
+                new GuildMember("warlock 4", 2, warlockGuild),
+                new GuildMember("warlock 5", 4, warlockGuild),
+                new GuildMember("warlock 6", 5, warlockGuild),
+                new GuildMember("warlock 7", 1, warlockGuild)
+        };
+        warlockMembersArr[0].getPromoted();
+        warlockMembersArr[0].getPromoted();
+        warlockMembersArr[2].getPromoted();
+        warlockMembersArr[6].getPromoted();
+        initializeMembersWithRandomSpells(warlockMembersArr, spellsArr);
 
-        GuildMember warlock1 = new GuildMember("warlock 1", 1, warlockGuild);
-        warlock1.getPromoted();
-        warlock1.getPromoted();
-        warlock1.learnSpell(spell);
-        warlock1.learnSpell(spell2);
-        warlock1.learnSpell(spell1);
-        GuildMember warlock2 = new GuildMember("warlock 2", 3, warlockGuild);
-        warlock2.learnSpell(spell);
-        warlock2.learnSpell(spell2);
-        warlock2.learnSpell(spell1);
-        GuildMember warlock3 = new GuildMember("warlock 3", 1, warlockGuild);
-        warlock3.getPromoted();
-        warlock3.learnSpell(spell);
-        warlock3.learnSpell(spell2);
-        warlock3.learnSpell(spell1);
-        GuildMember warlock4 = new GuildMember("warlock 4", 2, warlockGuild);
-        warlock4.learnSpell(spell);
-        warlock4.learnSpell(spell2);
-        warlock4.learnSpell(spell1);
-        GuildMember warlock5 = new GuildMember("warlock 5", 4, warlockGuild);
-        warlock5.learnSpell(spell);
-        warlock5.learnSpell(spell2);
-        warlock5.learnSpell(spell1);
-        GuildMember warlock6 = new GuildMember("warlock 6", 5, warlockGuild);
-        warlock6.learnSpell(spell2);
-        warlock6.learnSpell(spell);
-        warlock6.learnSpell(spell1);
-        GuildMember warlock7 = new GuildMember("warlock 7", 1, warlockGuild);
-        warlock7.getPromoted();
-        warlock7.learnSpell(spell);
-        warlock7.learnSpell(spell2);
-        warlock7.learnSpell(spell1);
-
-        SuperObject.getObjectsFromClass(GuildMember.class).forEach(m->{
-            m.getKnownSpells().forEach(ks-> ks.setMasteryLevel(((int) (Math.random() * 9)) + 1));
+        SuperObject.getObjectsFromClass(GuildMember.class).forEach(m -> {
+            m.getKnownSpells().forEach(ks -> ks.setMasteryLevel(((int) (Math.random() * 9)) + 1));
             m.rebuildSortedTree();
         });
+    }
+
+    private static void createSpellRequirements(Spell[] spellArr, Mission mission){
+        int reqCount = generateNormalRandomInt(2, 5);
+        HashSet<Integer> knownSpellsIndices = new HashSet<>();
+        for (int i = 0; i < reqCount; i++) {
+            int spellIndex;
+            do {
+                spellIndex = ((int) (Math.random() * spellArr.length));
+            } while (knownSpellsIndices.contains(spellIndex));
+            knownSpellsIndices.add(spellIndex);
+            new RequiredSpell(spellArr[spellIndex], mission, generateNormalRandomInt(1, 7));
+        }
+    }
+    private static void initializeMembersWithRandomSpells(GuildMember[] members, Spell[] spellsArr) {
+        for (int i = 0; i < members.length; i++) {
+            HashSet<Integer> knownSpellsIndices = new HashSet<>();
+            for (int j = 0; j < generateNormalRandomInt(1, 7); j++) {
+                int spellIndex;
+                do {
+                    spellIndex = ((int) (Math.random() * spellsArr.length));
+                } while (knownSpellsIndices.contains(spellIndex));
+                knownSpellsIndices.add(spellIndex);
+                members[i].learnSpell(spellsArr[spellIndex]);
+            }
+        }
+    }
+
+    public static int generateNormalRandomInt(int min, int max) {
+        int minNew = Math.min(min, max);
+        int maxNew = Math.max(min, max);
+        Random random = new Random();
+        double mean = (minNew + maxNew) / 2.0;
+        double stdDev = (maxNew - minNew) / 4.0;
+        while (true) {
+            double normalValue = random.nextGaussian() * stdDev + mean;
+            int rounded = (int) Math.round(normalValue);
+            if (rounded >= minNew && rounded <= maxNew) {
+                return rounded;
+            }
+        }
     }
 }

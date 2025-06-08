@@ -1,6 +1,6 @@
 package App.Panels.Components;
 
-import App.Models.Magic.Spell;
+import App.Models.Magic.Spells.Spell;
 import App.Panels.GuiUtil.RoundedPanel;
 import App.StaticUtils.ColorUtils;
 

@@ -1,12 +1,11 @@
 package App.Models.Mission;
 
-import App.Callbacks.SerializableRunnable;
 import App.Models.Guild.GuildMember;
 import App.Models.Guild.MemberState;
 import App.Models.Guild.Territory;
 import App.Models.Magic.KnownSpell;
 import App.Models.Magic.RequiredSpell;
-import App.Models.Magic.Spell;
+import App.Models.Magic.Spells.Spell;
 import App.Util.MissionTimerService;
 import App.Util.SuperObject;
 
@@ -29,8 +28,7 @@ public class Mission extends SuperObject {
     private long startTimeMillis;
 
 
-    public Mission(Territory territory, MissionDifficulty difficulty, String name, String description, Set<Spell> requiredSpells, Set<MissionReward> rewards) {
-        this.rewards = rewards;
+    public Mission(Territory territory, MissionDifficulty difficulty, String name, String description) {
         this.territory = territory;
         this.difficulty = difficulty;
         this.requiredSpellsSet = new HashSet<>();
@@ -38,14 +36,15 @@ public class Mission extends SuperObject {
         this.description = description;
         this.status = MissionStatus.CREATED;
         this.assignments = new HashSet<>();
-
-        addToRequiredSpells(requiredSpells.toArray(new Spell[0]));
     }
 
     public void startMission(){
         this.startTimeMillis = System.currentTimeMillis();
         this.status = MissionStatus.IN_PROGRESS;
         MissionTimerService.getInstance().registerMission(this);
+    }
+    public boolean hasCompatibleSpell(KnownSpell knownSpell) {
+        return requiredSpellsSet.stream().anyMatch(required -> required.getRequiredSpell().equals(knownSpell.getSpell()) && required.getKnownLevel() <= knownSpell.getMasteryLevel());
     }
     public void completeMission(){
 

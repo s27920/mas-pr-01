@@ -1,5 +1,6 @@
 package App.Models.Magic;
 
+import App.Models.Magic.Spells.Spell;
 import App.Models.Mission.Mission;
 
 import java.io.Serializable;
@@ -13,6 +14,14 @@ public class RequiredSpell implements Serializable {
         this.requiredSpell = requiredSpell;
         this.mission = mission;
         this.knownLevel = 1;
+        requiredSpell.addRequiredSpell(this);
+        mission.addMissionRequirement(this);
+    }
+
+    public RequiredSpell(Spell requiredSpell, Mission mission, int masteryLevel) {
+        this.requiredSpell = requiredSpell;
+        this.mission = mission;
+        this.knownLevel = masteryLevel;
         requiredSpell.addRequiredSpell(this);
         mission.addMissionRequirement(this);
     }

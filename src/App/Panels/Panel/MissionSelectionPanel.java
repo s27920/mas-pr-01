@@ -2,7 +2,7 @@ package App.Panels.Panel;
 
 import App.Models.Guild.GuildMember;
 import App.Models.Magic.RequiredSpell;
-import App.Models.Magic.Spell;
+import App.Models.Magic.Spells.Spell;
 import App.Models.Mission.Mission;
 import App.Models.Mission.MissionStatus;
 import App.Panels.Components.GuildMemberHeaderPanel;
@@ -21,6 +21,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 public class MissionSelectionPanel extends JPanel {
@@ -284,20 +285,20 @@ public class MissionSelectionPanel extends JPanel {
     }
 
     public boolean startMission() {
-        Set<Spell> requiredSpells = new HashSet<>();
-        selectedMission.getRequiredSpellsSet().forEach(ks -> {
-            requiredSpells.add(ks.getRequiredSpell());
-        });
+
+        Set<RequiredSpell> requiredSpellsCopy = new HashSet<>(selectedMission.getRequiredSpellsSet());
         if (selectedMemberPointer > 1) {
             for (int i = 0; i < selectedMemberPointer; i++) {
                 selectedMembers[i].getKnownSpells().forEach(s -> {
-                    if (requiredSpells.size() == 0) {
+                    if (requiredSpellsCopy.size() == 0) {
                         return;
                     }
-                    requiredSpells.remove(s.getSpell());
+                    if (selectedMission.hasCompatibleSpell(s)){
+                        requiredSpellsCopy.stream().filter(sp -> sp.getRequiredSpell().equals(s.getSpell())).findAny().ifPresent(requiredSpellsCopy::remove);
+                    }
                 });
             }
-            if (requiredSpells.size() == 0) {
+            if (requiredSpellsCopy.size() == 0) {
                 for (int i = 0; i < selectedMemberPointer; i++) {
                     selectedMembers[i].assignNewMission(selectedMission);
                 }
