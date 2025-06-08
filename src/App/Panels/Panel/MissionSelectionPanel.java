@@ -1,7 +1,6 @@
 package App.Panels.Panel;
 
 import App.Models.Guild.GuildMember;
-import App.Models.Guild.MemberState;
 import App.Models.Magic.RequiredSpell;
 import App.Models.Magic.Spell;
 import App.Models.Mission.Mission;
@@ -13,13 +12,13 @@ import App.Panels.GuiUtil.ImagePanel;
 import App.Panels.GuiUtil.PlaceHolderPanel;
 import App.Panels.GuiUtil.RoundedPanel;
 import App.StaticUtils.ColorUtils;
+import App.StaticUtils.ErrorUtils;
 import App.StaticUtils.FontUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -66,7 +65,8 @@ public class MissionSelectionPanel extends JPanel {
     private final HashMap<GuildMember, GuildMemberSelectionTile> guildMemberToPanelMapping;
 
     private Runnable onMissionCompletionCallback;
-
+    private final JLayeredPane layeredPane;
+    private final int[] renderDims = new int[2];
 
     public MissionSelectionPanel(
             Runnable cancelCallback,
@@ -77,7 +77,12 @@ public class MissionSelectionPanel extends JPanel {
 
         this.thisPanel = this;
 
+        layeredPane = new JLayeredPane();
         this.setLayout(new BorderLayout());
+        this.add(layeredPane, BorderLayout.CENTER);
+
+        JPanel mainContentPanel = new JPanel(new BorderLayout());
+
         this.selectedMembers = new GuildMember[4];
         this.selectedMemberPanels = new App.Util.Iterable[4];
         this.selectedMemberPointer = 0;
@@ -87,15 +92,14 @@ public class MissionSelectionPanel extends JPanel {
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setPreferredSize(new Dimension(WIDTH, 40));
         topPanel.setBackground(ColorUtils.CARBON);
-        headerPanel = new GuildMemberHeaderPanel(() -> {}); // TODO guess I could add sumn here
+        headerPanel = new GuildMemberHeaderPanel(() -> { }); // TODO guess I could add sumn here
         headerPanel.setPreferredSize(new Dimension(WIDTH, 40));
         topPanel.add(headerPanel);
 
-
         JPanel contentWrapper = new JPanel(new BorderLayout());
 
-        this.add(topPanel, BorderLayout.NORTH);
-        this.add(contentWrapper, BorderLayout.CENTER);
+        mainContentPanel.add(topPanel, BorderLayout.NORTH);
+        mainContentPanel.add(contentWrapper, BorderLayout.CENTER);
 
         JPanel memberSelectionPanel = new JPanel();
         JPanel missionDetailsPanel = new JPanel(new BorderLayout());
@@ -123,10 +127,10 @@ public class MissionSelectionPanel extends JPanel {
         selectedPanel = new JPanel();
         JPanel listPanel = new JPanel();
 
-        selectedPanel.setPreferredSize(new Dimension(halfWidth, ((int) ((HEIGHT - 40) * 0.3)))); // Adjust for top panel
-        selectedPanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+        selectedPanel.setPreferredSize(new Dimension(halfWidth, ((int) ((HEIGHT - 40) * 0.3))));
+        selectedPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-        listPanel.setPreferredSize(new Dimension(halfWidth, ((int) ((HEIGHT - 40) * 0.7)))); // Adjust for top panel
+        listPanel.setPreferredSize(new Dimension(halfWidth, ((int) ((HEIGHT - 40) * 0.7))));
 
         memberSelectionPanel.add(selectedPanel);
         memberSelectionPanel.add(listPanel);
@@ -176,13 +180,13 @@ public class MissionSelectionPanel extends JPanel {
         missionCenterPanel = new JPanel(new BorderLayout());
         missionCenterPanel.setBackground(ColorUtils.DARK_PURPLE);
 
-        missionCenterPanel.setPreferredSize(new Dimension(availableWidth, (int) ((HEIGHT - 40) * 0.92))); // Adjust for top panel
+        missionCenterPanel.setPreferredSize(new Dimension(availableWidth, (int) ((HEIGHT - 40) * 0.92)));
         missionCenterPanel.setBackground(ColorUtils.DARK_PURPLE);
         missionScrollPanel.add(missionCenterPanel, BorderLayout.CENTER);
 
         // contains mission title and description
         JPanel missionTextDetailPanels = new JPanel(new BorderLayout());
-        missionDescriptionArea = new JTextArea(){
+        missionDescriptionArea = new JTextArea() {
             @Override
             public boolean contains(int x, int y) {
                 return false;
@@ -230,8 +234,6 @@ public class MissionSelectionPanel extends JPanel {
 
         missionCenterPanel.add(missionTextDetailPanels, BorderLayout.CENTER);
 
-        double textDescriptionPanelHeight = 1.0; //setup because they were final so it's needed
-
         // center panel end
 
         // bottom panel set-up start
@@ -262,20 +264,26 @@ public class MissionSelectionPanel extends JPanel {
         confirmButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                startMission();
-                resetPanels();
-                cleanPanels();
+                if (startMission()) {
+                    cancelCallback.run();
+                    resetPanels();
+                    cleanPanels();
+                }
             }
         });
 
-        buttonPanel.setPreferredSize(new Dimension(availableWidth, (int) ((HEIGHT - 40) * 0.08))); // Adjust for top panel
+        buttonPanel.setPreferredSize(new Dimension(availableWidth, (int) ((500 - 40) * 0.08)));
         missionScrollPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // bottom panel set-up end
+
+        mainContentPanel.setBounds(0, 0, /*TODO actual render size is 706 not WIDTH (720)*/706, HEIGHT - 40);
+        layeredPane.setPreferredSize(new Dimension(706, HEIGHT - 40));
+
+        layeredPane.add(mainContentPanel, JLayeredPane.DEFAULT_LAYER);
     }
 
-
-    public void startMission() {
+    public boolean startMission() {
         Set<Spell> requiredSpells = new HashSet<>();
         selectedMission.getRequiredSpellsSet().forEach(ks -> {
             requiredSpells.add(ks.getRequiredSpell());
@@ -294,23 +302,19 @@ public class MissionSelectionPanel extends JPanel {
                     selectedMembers[i].assignNewMission(selectedMission);
                 }
 
-                selectedMission.calculateMissionCompletionTime();
-                final GuildMember[] guildMembers = Arrays.copyOf(selectedMembers, selectedMemberPointer);
-                selectedMission.startMission(selectedMission.getMissionCompletionTime(), () -> {
-                    for (GuildMember guildMember : guildMembers) {
-                        guildMember.setMemberState(MemberState.ON_STANDBY);
-                    }
-                    onMissionCompletionCallback.run();
-                });
-                cancelCallback.run();
-                System.out.println("Start mission");
+                selectedMission.getMissionCompletionTime();
+                selectedMission.startMission();
             } else {
-                System.out.println("team does not fulfil mission reqs");
+                ErrorUtils.showError(layeredPane, "team does not fulfil mission requirements :(", renderDims);
+                return false;
             }
         } else {
-            System.out.println("team too small");
+            ErrorUtils.showError(layeredPane, "team too small :(", renderDims);
+            return false;
         }
+
         resetPanels();
+        return true;
     }
 
     public void setMissionDispatcher(GuildMember missionDispatcher) {
@@ -333,7 +337,13 @@ public class MissionSelectionPanel extends JPanel {
             });
             populateMemberSelectionList();
         }
+    }
 
+    @Override
+    public void setBounds(int x, int y, int width, int height) {
+        super.setBounds(x, y, width, height);
+        this.renderDims[0] = width;
+        this.renderDims[1] = height;
     }
 
     public void populateMemberSelectionList() {
@@ -418,7 +428,7 @@ public class MissionSelectionPanel extends JPanel {
         thisPanel.repaint();
     }
 
-    private int calculateTextAreaHeight(String text, Font font, int availableWidth){
+    private int calculateTextAreaHeight(String text, Font font, int availableWidth) {
         JTextArea tempTextArea = new JTextArea();
         tempTextArea.setFont(font);
         tempTextArea.setLineWrap(true);
@@ -432,7 +442,7 @@ public class MissionSelectionPanel extends JPanel {
     }
 
     public void setSelectedMission(Mission selectedMission) {
-        if (selectedMission.getStatus() == MissionStatus.CREATED){
+        if (selectedMission.getStatus() == MissionStatus.CREATED) {
             this.selectedMission = selectedMission;
             missionAreaLabel.setText(String.format("mission area: %s", selectedMission.getTerritory().getTerritoryName()));
             missionAreaLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -539,7 +549,7 @@ public class MissionSelectionPanel extends JPanel {
         }
     }
 
-    public void cleanPanels(){
+    public void cleanPanels() {
         resetPanels();
         int accessibleChildrenCount = memberListPanel.getAccessibleContext().getAccessibleChildrenCount();
         Component[] components = memberListPanel.getComponents();

@@ -1,5 +1,6 @@
 package App.Models.Mission;
 
+import App.Callbacks.SerializableRunnable;
 import App.Models.Guild.GuildMember;
 import App.Models.Guild.MemberState;
 import App.Models.Guild.Territory;
@@ -24,8 +25,9 @@ public class Mission extends SuperObject {
     private String description;
 
     public static final long MISSION_COMPLETION_TIME_MILLIS_BASELINE = 15000;
-    private long missionCompletionTime;
+    private long missionCompletionTime = -1;
     private long startTimeMillis;
+
 
     public Mission(Territory territory, MissionDifficulty difficulty, String name, String description, Set<Spell> requiredSpells, Set<MissionReward> rewards) {
         this.rewards = rewards;
@@ -40,10 +42,10 @@ public class Mission extends SuperObject {
         addToRequiredSpells(requiredSpells.toArray(new Spell[0]));
     }
 
-    public void startMission(long missionCompletionTimeMillis, Runnable callback){
-        MissionTimerService.getInstance().registerMission(missionCompletionTimeMillis, callback);
-        this.status = MissionStatus.IN_PROGRESS;
+    public void startMission(){
         this.startTimeMillis = System.currentTimeMillis();
+        this.status = MissionStatus.IN_PROGRESS;
+        MissionTimerService.getInstance().registerMission(this);
     }
     public void completeMission(){
 
@@ -60,7 +62,7 @@ public class Mission extends SuperObject {
         return startTimeMillis;
     }
 
-    public void calculateMissionCompletionTime() {
+    private void calculateMissionCompletionTime() {
         double difficultyScalar = 1;
         difficultyScalar += getDifficulty().ordinal() / 4.0;
 
@@ -95,11 +97,20 @@ public class Mission extends SuperObject {
     }
 
     public long getMissionCompletionTime() {
+        if (missionCompletionTime == -1){
+            calculateMissionCompletionTime();
+        }
         return missionCompletionTime;
     }
 
     public Set<MissionAssignment> getAssignments() {
         return Collections.unmodifiableSet(assignments);
+    }
+
+    public void freeMembers(){
+        assignments.forEach(ma->{
+            ma.getGuildMember().setMemberState(MemberState.ON_STANDBY);
+        });
     }
 
     public Territory getTerritory() {
@@ -152,3 +163,4 @@ public class Mission extends SuperObject {
         return Collections.unmodifiableSet(this.requiredSpellsSet);
     }
 }
+

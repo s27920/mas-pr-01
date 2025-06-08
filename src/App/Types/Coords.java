@@ -1,4 +1,6 @@
 package App.Types;
 
-public record Coords(int x, int y) {
+import java.io.Serializable;
+
+public record Coords(int x, int y) implements Serializable {
 }

@@ -1,6 +1,8 @@
 package App.Models.Magic;
 
-public enum Rarity {
+import java.io.Serializable;
+
+public enum Rarity implements Serializable {
     COMMON,
     UNCOMMON,
     RARE,

@@ -1,6 +1,8 @@
 package App.Models.Mission;
 
-public enum MissionRewardType {
+import java.io.Serializable;
+
+public enum MissionRewardType implements Serializable {
     COIN,
     RESPECT,
     MAGICAL_RESOURCE,

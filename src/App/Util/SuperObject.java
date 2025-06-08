@@ -46,6 +46,11 @@ public class SuperObject implements Serializable {
         staticValues.forEach((k,v) -> v.forEach((fieldName, fieldValue)->{
             try {
                 Field field = k.getDeclaredField(fieldName);
+
+                if (Modifier.isFinal(field.getModifiers())) {
+                    return;
+                }
+
                 field.setAccessible(true);
                 String setterName = "set" + Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);                try {
                     Method setField = k.getDeclaredMethod(setterName, field.getType());

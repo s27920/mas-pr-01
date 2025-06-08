@@ -1,6 +1,8 @@
 package App.Models.Magic;
 
-public enum SpellType {
+import java.io.Serializable;
+
+public enum SpellType implements Serializable {
     Damage,
     Healing,
     Support,

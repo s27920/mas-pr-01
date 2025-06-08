@@ -1,6 +1,8 @@
 package App.Models.Mission;
 
-public enum MissionDifficulty {
+import java.io.Serializable;
+
+public enum MissionDifficulty implements Serializable {
     Easy,
     Medium,
     Hard,

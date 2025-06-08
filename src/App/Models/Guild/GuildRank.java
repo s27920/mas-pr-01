@@ -1,6 +1,8 @@
 package App.Models.Guild;
 
-public enum GuildRank{
+import java.io.Serializable;
+
+public enum GuildRank implements Serializable {
     Master,
     Apprentice,
     Elder,

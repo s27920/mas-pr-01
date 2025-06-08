@@ -1,8 +1,9 @@
 package App.Models.Magic;
 
 import App.Models.Wizard.Wizard;
+import App.Util.SuperObject;
 
-public class MagicResource {
+public class MagicResource extends SuperObject {
     private final String resourceName;
     private final String description;
     private long quantity;

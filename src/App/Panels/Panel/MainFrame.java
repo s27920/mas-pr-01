@@ -1,9 +1,14 @@
 package App.Panels.Panel;
 
 import App.Models.Mission.MissionStatus;
+import App.Util.MissionTimerService;
+import App.Util.SuperObject;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
 
 public class MainFrame extends JFrame {
     JPanel mainPanel;
@@ -31,10 +36,7 @@ public class MainFrame extends JFrame {
                     missionSelectionPanel.setOnMissionCompletionCallback(runnable);
                     cardLayout.next(mainPanel);
                 },
-                ()->{
-                    cardLayout.previous(mainPanel);
-//                    panel.cleanPanels();
-                }
+                ()-> cardLayout.previous(mainPanel)
                 );
 
 
@@ -49,8 +51,22 @@ public class MainFrame extends JFrame {
         this.setContentPane(mainPanel);
 
         this.setVisible(true);
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    SuperObject.writeObjects();
+                    MissionTimerService.shutdown();
+                } catch (IOException ignored) { }
+                System.exit(0);
+            }
+        });
+
         this.setResizable(false);
         this.setSize(new Dimension(720, 560));
     }
+
+
 }

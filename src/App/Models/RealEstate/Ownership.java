@@ -1,10 +1,11 @@
 package App.Models.RealEstate;
 
 import App.Models.Wizard.Wizard;
+import App.Util.SuperObject;
 
 import java.time.LocalDate;
 
-public class Ownership {
+public class Ownership extends SuperObject {
     private LocalDate purchaseDate;
     Wizard wizard;
     Domicile domicile;

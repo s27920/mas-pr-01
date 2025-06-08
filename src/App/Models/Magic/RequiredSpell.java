@@ -2,7 +2,9 @@ package App.Models.Magic;
 
 import App.Models.Mission.Mission;
 
-public class RequiredSpell {
+import java.io.Serializable;
+
+public class RequiredSpell implements Serializable {
     private final Spell requiredSpell;
     private final Mission mission;
     private int knownLevel;

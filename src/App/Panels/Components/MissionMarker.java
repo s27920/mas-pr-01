@@ -65,6 +65,11 @@ public class MissionMarker extends JPanel {
             case Medium -> new Color(255, 255, 0, 200);
             case Hard -> new Color(255, 0, 0, 200);
         };
+        this.borderColor = switch (mission.getStatus()){
+            case CREATED -> borderColor;
+            case IN_PROGRESS -> Color.MAGENTA;
+            case COMPLETED -> Color.GRAY;
+        };
 
         this.x1 = coords.x() - (DIAMETER + BORDER_THICKNESS) / 2;
         this.y1 = coords.y() - (DIAMETER + BORDER_THICKNESS) / 2;

@@ -1,6 +1,8 @@
 package App.Models.Mission;
 
-public enum MissionStatus {
+import java.io.Serializable;
+
+public enum MissionStatus implements Serializable {
     CREATED,
     IN_PROGRESS,
     COMPLETED,

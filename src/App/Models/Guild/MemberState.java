@@ -1,6 +1,8 @@
 package App.Models.Guild;
 
-public enum MemberState {
+import java.io.Serializable;
+
+public enum MemberState implements Serializable {
     ON_STANDBY,
     IN_MISSION,
     INJURED,

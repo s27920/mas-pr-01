@@ -1,5 +1,6 @@
 package App.Panels.Panel;
 
+import App.Callbacks.MissionMarkerCallback;
 import App.Callbacks.RunnableCallback;
 import App.Models.Guild.GuildMember;
 import App.Models.Guild.MemberState;
@@ -13,7 +14,10 @@ import App.Panels.GuiUtil.ErrorNotificationPanel;
 import App.Panels.GuiUtil.ImagePanel;
 import App.Panels.GuiUtil.RoundedPanel;
 import App.StaticUtils.ColorUtils;
+import App.StaticUtils.ErrorUtils;
 import App.StaticUtils.FontUtils;
+import App.Util.MissionMarkerCreationCountDownLatch;
+import App.Util.MissionTimerService;
 import App.Util.SuperObject;
 
 import javax.swing.*;
@@ -38,36 +42,6 @@ public class GuildViewPanel extends JPanel {
 
     private final int[] dims = new int[2];
 
-    private void showError(String message) {
-        final ErrorNotificationPanel[] errorNotificationHolder = new ErrorNotificationPanel[1];
-
-        Runnable dismissCallback = () -> {
-            backgroundImagePanel.remove(errorNotificationHolder[0]);
-            backgroundImagePanel.repaint();
-        };
-
-        ErrorNotificationPanel errorPanel = new ErrorNotificationPanel(message, new Dimension(dims[0], dims[1]));
-        errorNotificationHolder[0] = errorPanel;
-
-        backgroundImagePanel.add(errorPanel, JLayeredPane.POPUP_LAYER);
-        backgroundImagePanel.repaint();
-
-        Timer autoRemoveTimer = new Timer(3000, (e) -> dismissCallback.run());
-        autoRemoveTimer.setRepeats(false);
-        autoRemoveTimer.start();
-
-        errorPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        errorPanel.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (autoRemoveTimer.isRunning()) {
-                    autoRemoveTimer.stop();
-                }
-                dismissCallback.run();
-            }
-        });
-    }
-
     public GuildViewPanel(
             MissionSelectionCallback missionSelectionCallback,
             Runnable goBackCallback
@@ -91,21 +65,28 @@ public class GuildViewPanel extends JPanel {
 
             Color color = new Color(168, 168, 168, 150);
             int finalI = i;
+
+            MissionMarkerCallback missionCompletionCallback = (marker, layeredPane) ->{
+                marker.setBorderColor(Color.GRAY);
+                marker.revalidate();
+                marker.repaint();
+                layeredPane.repaint();
+            };
+
             RunnableCallback wrapper = (onErrorCallback) -> {
                 if(mission.getStatus() == MissionStatus.CREATED){
                     if (loggedInMember.getValidGuildMembers().stream().filter(gm -> gm.getMemberState() == MemberState.ON_STANDBY).count() < 2){
                         onErrorCallback.run();
-                        showError("Not enough guild members available! At least 2 members must be on standby to start a mission. Please wait for a mission to complete");
+                        ErrorUtils.showError(backgroundImagePanel, "Not enough guild members available! At least 2 members must be on standby to start a mission. Please wait for a mission to complete", dims);
                     } else {
-                        missionSelectionCallback.onMissionSelect(loggedInMember, mission, () -> {
-                            markers[finalI].setBorderColor(Color.GRAY);
-                            markers[finalI].revalidate();
-                            markers[finalI].repaint();
-                            backgroundImagePanel.repaint();
+                        // TODO potential double callback issuing idk
+                        missionSelectionCallback.onMissionSelect(loggedInMember, mission, ()->{
+                            missionCompletionCallback.onComplete(markers[finalI], backgroundImagePanel);
                         });
                     }
                 }
             };
+
             MissionMarker missionMarker = new MissionMarker(
                     color,
                     mission.getTerritory().getTerritoryCoordinates(),
@@ -132,10 +113,15 @@ public class GuildViewPanel extends JPanel {
                             () -> markers[finalI].setVisible(true)
                     ), JLayeredPane.PALETTE_LAYER));
             markers[i] = missionMarker;
+            MissionTimerService.getInstance().setRegisterControlTask(mission, () -> missionCompletionCallback.onComplete(markers[finalI], backgroundImagePanel));
+
 
             missionMarkers.add(missionMarker);
             backgroundImagePanel.add(missionMarker, JLayeredPane.PALETTE_LAYER);
         }
+
+        System.out.println("finished");
+        MissionMarkerCreationCountDownLatch.getInstance().countDown();
 
         this.setLayout(new BorderLayout());
         this.add(headerPanel, BorderLayout.NORTH);
