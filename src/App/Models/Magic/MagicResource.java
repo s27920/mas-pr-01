@@ -1,6 +1,6 @@
 package App.Models.Magic;
 
-import App.Models.Wizard.Wizard;
+import App.Models.Guild.Guild;
 import App.Util.SuperObject;
 
 public class MagicResource extends SuperObject {
@@ -10,7 +10,7 @@ public class MagicResource extends SuperObject {
     private double unitCost;
 
     private final Rarity rarity;
-    private Wizard wizard;
+    private Guild guild;
 
     public MagicResource(String resourceName, String description, long quantity, double unitCost, Rarity rarity) {
         this.resourceName = resourceName;
@@ -18,6 +18,10 @@ public class MagicResource extends SuperObject {
         this.quantity = quantity;
         this.unitCost = unitCost;
         this.rarity = rarity;
+    }
+
+    public void setOwner(Guild guild){
+        guild.addToOwnedMagicalResource(this);
     }
 
     public String getResourceName() {
@@ -48,11 +52,4 @@ public class MagicResource extends SuperObject {
         return rarity;
     }
 
-    public Wizard getWizard() {
-        return wizard;
-    }
-
-    public void setWizard(Wizard wizard) {
-        this.wizard = wizard;
-    }
 }

@@ -21,7 +21,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 public class MissionSelectionPanel extends JPanel {
@@ -39,9 +38,6 @@ public class MissionSelectionPanel extends JPanel {
     private GuildMember[] selectedMembers;
     private App.Util.Iterable[] selectedMemberPanels;
     private int selectedMemberPointer;
-
-    private final Runnable cancelCallback;
-    private final Runnable confirmCallback;
 
     private final ImagePanel clippedImagePanel;
     private final JLabel missionDifficultyLabel;
@@ -71,10 +67,8 @@ public class MissionSelectionPanel extends JPanel {
 
     public MissionSelectionPanel(
             Runnable cancelCallback,
-            Runnable confirmCallback
+            Runnable returnCallback
     ) {
-        this.cancelCallback = cancelCallback;
-        this.confirmCallback = confirmCallback;
 
         this.thisPanel = this;
 
@@ -93,7 +87,11 @@ public class MissionSelectionPanel extends JPanel {
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setPreferredSize(new Dimension(WIDTH, 40));
         topPanel.setBackground(ColorUtils.CARBON);
-        headerPanel = new GuildMemberHeaderPanel(() -> { }); // TODO guess I could add sumn here
+        headerPanel = new GuildMemberHeaderPanel(()->{
+            returnCallback.run();
+            resetPanels();
+            cleanPanels();
+        });
         headerPanel.setPreferredSize(new Dimension(WIDTH, 40));
         topPanel.add(headerPanel);
 
@@ -299,18 +297,22 @@ public class MissionSelectionPanel extends JPanel {
                 });
             }
             if (requiredSpellsCopy.size() == 0) {
-                for (int i = 0; i < selectedMemberPointer; i++) {
-                    selectedMembers[i].assignNewMission(selectedMission);
+                GuildMember missionLeader = selectedMembers[0];
+                missionLeader.assignNewMission(selectedMission).setMissionLeader(missionLeader);
+
+                for (int i = 1; i < selectedMemberPointer; i++) {
+                    GuildMember missionMember = selectedMembers[i];
+                    missionMember.assignNewMission(selectedMission).setMissionLeader(missionMember);
                 }
 
                 selectedMission.getMissionCompletionTime();
                 selectedMission.startMission();
             } else {
-                ErrorUtils.showError(layeredPane, "team does not fulfil mission requirements :(", renderDims);
+                ErrorUtils.showError(layeredPane, "team does not fulfil mission requirements. Please review the required spells.", renderDims);
                 return false;
             }
         } else {
-            ErrorUtils.showError(layeredPane, "team too small :(", renderDims);
+            ErrorUtils.showError(layeredPane, "team too small. You need to select at least 2 guild members.", renderDims);
             return false;
         }
 
@@ -327,7 +329,7 @@ public class MissionSelectionPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (missionDispatcher != null) {
-            missionDispatcher.getInvalidGuildMembers().forEach(member -> {
+            missionDispatcher.getGuild().getInvalidGuildMembers().forEach(member -> {
                 JPanel panel;
                 if ((panel = guildMemberToPanelMapping.get(member)) != null) {
                     memberListPanel.remove(panel);
@@ -348,7 +350,7 @@ public class MissionSelectionPanel extends JPanel {
     }
 
     public void populateMemberSelectionList() {
-        for (GuildMember member : missionDispatcher.getValidGuildMembers()) {
+        for (GuildMember member : missionDispatcher.getGuild().getValidGuildMembers()) {
             if (!guildMemberToPanelMapping.containsKey(member)) {
                 GuildMemberSelectionTile comp = new GuildMemberSelectionTile(member, WIDTH, (panel) -> {
                     int index;
@@ -361,7 +363,13 @@ public class MissionSelectionPanel extends JPanel {
                         selectedMembers[selectedMemberPointer] = member;
                         selectedPanel.remove((PlaceHolderPanel) selectedMemberPanels[selectedMemberPointer]);
 
-                        selectedMemberPanels[selectedMemberPointer] = new SelectedMemberPanel(member, new Dimension(((int) (WIDTH * 0.125)), ((int) (HEIGHT * 0.35))), selectedMemberPointer);
+                        selectedMemberPanels[selectedMemberPointer] = new SelectedMemberPanel(
+                                member, new Dimension(((int) (WIDTH * 0.125)), ((int) (HEIGHT * 0.35))),
+                                selectedMemberPointer
+                        );
+
+                        ((SelectedMemberPanel) selectedMemberPanels[0]).makeLeader();
+
                         selectedPanel.add((SelectedMemberPanel) selectedMemberPanels[selectedMemberPointer], selectedMemberPointer);
 
                         thisPanel.revalidate();
@@ -425,6 +433,9 @@ public class MissionSelectionPanel extends JPanel {
         selectedMemberPanels[index] = comp;
         selectedPanel.add(comp);
         selectedMemberPointer--;
+        if (selectedMemberPointer > 0){
+            ((SelectedMemberPanel) selectedMemberPanels[0]).makeLeader();
+        }
         thisPanel.revalidate();
         thisPanel.repaint();
     }
@@ -510,10 +521,8 @@ public class MissionSelectionPanel extends JPanel {
             selectedMissionRequiredSpellsSet.forEach((rs) -> {
 
                 Spell selectedSpell = rs.getRequiredSpell();
-                Color textColor = new Color(235, 227, 196);
-                Color requiredSpellPanelColor = new Color(94, 94, 94);
 
-                RoundedPanel roundedPanel = new RoundedPanel(new Dimension(-1, panelHeight), 10, requiredSpellPanelColor);
+                RoundedPanel roundedPanel = new RoundedPanel(new Dimension(-1, panelHeight), 10, ColorUtils.GREY);
                 roundedPanel.setLayout(new BorderLayout());
 
                 JLabel spellNameLabel = new JLabel(selectedSpell.getName(), SwingConstants.RIGHT);
@@ -527,8 +536,8 @@ public class MissionSelectionPanel extends JPanel {
                 spellLevelLabel.setPreferredSize(labelDim);
                 spellNameLabel.setFont(FontUtils.getJomhuriaFont(24));
                 spellLevelLabel.setFont(FontUtils.getJomhuriaFont(24));
-                spellNameLabel.setForeground(textColor);
-                spellLevelLabel.setForeground(textColor);
+                spellNameLabel.setForeground(ColorUtils.CREAM);
+                spellLevelLabel.setForeground(ColorUtils.CREAM);
 
                 roundedPanel.add(spellNameLabel, BorderLayout.WEST);
                 roundedPanel.add(spellLevelLabel, BorderLayout.EAST);

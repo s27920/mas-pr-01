@@ -1,5 +1,6 @@
 package App.Panels.GuiUtil;
 
+import App.StaticUtils.ColorUtils;
 import App.StaticUtils.FontUtils;
 
 import javax.swing.*;
@@ -13,7 +14,7 @@ public class PlaceHolderPanel extends JPanel implements App.Util.Iterable {
         setIndex(index);
         this.setLayout(new GridBagLayout());
 
-        RoundedPanel roundedPanel = new RoundedPanel(new Dimension(dimension.width - 10, dimension.height - 10), 10, new Color(94, 94, 94));
+        RoundedPanel roundedPanel = new RoundedPanel(new Dimension(dimension.width - 10, dimension.height - 10), 10, ColorUtils.GREY);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 1.0;

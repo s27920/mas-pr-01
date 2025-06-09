@@ -71,6 +71,11 @@ public class MissionMarker extends JPanel {
             case COMPLETED -> Color.GRAY;
         };
 
+        if (mission.validateMissionCompleted()) {
+            this.borderColor = Color.GRAY;
+            System.out.println("huh");
+        }
+
         this.x1 = coords.x() - (DIAMETER + BORDER_THICKNESS) / 2;
         this.y1 = coords.y() - (DIAMETER + BORDER_THICKNESS) / 2;
         this.setBounds(x1, y1, DIAMETER + BORDER_THICKNESS * 2, DIAMETER + BORDER_THICKNESS * 2);

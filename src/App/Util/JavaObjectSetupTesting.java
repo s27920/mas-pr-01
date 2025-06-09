@@ -31,7 +31,7 @@ public class JavaObjectSetupTesting {
 
         int n = 22;
 
-        Coords[] coords = Territory.getNUniquePois(n);
+        Coords[] coords = getNUniquePois(n);
 
         Guild wizardGuild = new Guild("Wizards", "Vis per laborem", 1);
         Guild druidGuild = new Guild("Druids", "Gutta cavat lapidem non vi, sed saepe cadendo", 3);
@@ -108,13 +108,14 @@ public class JavaObjectSetupTesting {
                 spellIndex = ((int) (Math.random() * spellArr.length));
             } while (knownSpellsIndices.contains(spellIndex));
             knownSpellsIndices.add(spellIndex);
-            new RequiredSpell(spellArr[spellIndex], mission, generateNormalRandomInt(1, 7));
+            ;
+            new RequiredSpell(spellArr[spellIndex], mission, generateNormalRandomInt(1, 3 * (mission.getDifficulty().ordinal() + 1)));
         }
     }
     private static void initializeMembersWithRandomSpells(GuildMember[] members, Spell[] spellsArr) {
         for (int i = 0; i < members.length; i++) {
             HashSet<Integer> knownSpellsIndices = new HashSet<>();
-            for (int j = 0; j < generateNormalRandomInt(1, 7); j++) {
+            for (int j = 0; j < generateNormalRandomInt(2, 7); j++) {
                 int spellIndex;
                 do {
                     spellIndex = ((int) (Math.random() * spellsArr.length));
@@ -125,7 +126,7 @@ public class JavaObjectSetupTesting {
         }
     }
 
-    public static int generateNormalRandomInt(int min, int max) {
+    private static int generateNormalRandomInt(int min, int max) {
         int minNew = Math.min(min, max);
         int maxNew = Math.max(min, max);
         Random random = new Random();
@@ -138,5 +139,43 @@ public class JavaObjectSetupTesting {
                 return rounded;
             }
         }
+    }
+
+
+    private final static Coords[] POIS = {
+            new Coords(71, 69),
+            new Coords(142, 103),
+            new Coords(96, 165),
+            new Coords(269, 150),
+            new Coords(208, 147),
+            new Coords(255, 16),
+            new Coords(339, 75),
+            new Coords(412, 55),
+            new Coords(367, 148),
+            new Coords(291, 230),
+            new Coords(104, 340),
+            new Coords(130, 402),
+            new Coords(253, 361),
+            new Coords(296, 443),
+            new Coords(359, 304),
+            new Coords(428, 340),
+            new Coords(551, 375),
+            new Coords(611, 431),
+            new Coords(496, 191),
+            new Coords(538, 127),
+            new Coords(568, 61),
+            new Coords(619, 263)
+    };
+
+    private static Coords[] getNUniquePois(int n) {
+        Set<Coords> selectedPois = new HashSet<>();
+        for (int i = 0; i < n; i++) {
+            Coords poi;
+            do {
+                poi = POIS[((int) (Math.random() * POIS.length))];
+            } while (selectedPois.contains(poi));
+            selectedPois.add(poi);
+        }
+        return selectedPois.toArray(new Coords[0]);
     }
 }

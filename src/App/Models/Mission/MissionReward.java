@@ -1,5 +1,6 @@
 package App.Models.Mission;
 
+import App.Models.Guild.GuildMember;
 import App.Util.SuperObject;
 
 public class MissionReward extends SuperObject {
@@ -25,5 +26,9 @@ public class MissionReward extends SuperObject {
 
     public void addQuantity(long earned){
         this.quantity += earned;
+    }
+
+    public void setOwner(GuildMember guildMember){
+
     }
 }

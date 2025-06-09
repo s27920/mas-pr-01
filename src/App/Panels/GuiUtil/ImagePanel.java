@@ -37,6 +37,13 @@ public class ImagePanel extends JPanel {
         return new ImagePanel("resources/world-map.jpg");
     }
 
+    public static ImagePanel getErrorWizard(){
+        return new ImagePanel("resources/error-wizard-alt.png");
+    }
+    public static ImagePanel getLeaderMark(){
+        return new ImagePanel("resources/leader-marker.png");
+    }
+
     private BufferedImage readImageFromFile(String path){
         if (imageCache.containsKey(path)){
             return imageCache.get(path);

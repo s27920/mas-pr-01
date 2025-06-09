@@ -1,6 +1,5 @@
 package App.Panels.Components;
 
-import App.Callbacks.MissionSelectionCallback;
 import App.Callbacks.RunnableCallback;
 import App.Callbacks.ShapeIntersectCallback;
 import App.Models.Guild.GuildMember;
@@ -9,6 +8,8 @@ import App.Models.Mission.MissionAssignment;
 import App.Models.Mission.MissionStatus;
 import App.Panels.GuiUtil.ImagePanel;
 import App.Panels.GuiUtil.RoundedPanel;
+import App.StaticUtils.ColorUtils;
+import App.StaticUtils.FontUtils;
 import App.Types.Coords;
 
 import javax.swing.*;
@@ -41,21 +42,19 @@ public class DetailPanel extends RoundedPanel implements Runnable {
             Coords coords,
             Dimension dim,
             Dimension bounds,
-            Color color,
             RunnableCallback missionSelectionCallback,
             ShapeIntersectCallback shapeIntersectCallback,
             Runnable unsetFlag
     ) {
-        super(dim, ROUNDING, color);
+        super(dim, ROUNDING, new Color(166,166,166, 128));
+        this.setBorderColor(ColorUtils.CARBON);
+        this.setBorderWidth(2);
         this.guildMember = member;
         this.mission = mission;
         this.shapeIntersectCallback = shapeIntersectCallback;
         this.coords = coords;
         this.dim = dim;
         this.thisPanel = this;
-
-        Font infoFont = new Font("Britannic Bold", Font.PLAIN, 12);
-        Font timerFont = new Font("Broadway", Font.BOLD, 20);
 
         this.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -65,7 +64,7 @@ public class DetailPanel extends RoundedPanel implements Runnable {
         statusLabel.setPreferredSize(labelSize);
         Color carbonColor = new Color(35, 35, 35);
         statusLabel.setForeground(carbonColor);
-        statusLabel.setFont(infoFont);
+        statusLabel.setFont(FontUtils.getJomhuriaFont(20));
 
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -74,8 +73,7 @@ public class DetailPanel extends RoundedPanel implements Runnable {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.NORTH;
         this.add(statusLabel, gbc);
-
-        int currentRow = 1;
+        gbc.gridy++;
 
         if (mission.getStatus() == MissionStatus.IN_PROGRESS) {
             this.timerThread = new Thread(this);
@@ -83,65 +81,43 @@ public class DetailPanel extends RoundedPanel implements Runnable {
             this.timeLabel = new JLabel();
             timeLabel.setPreferredSize(labelSize);
             timeLabel.setForeground(carbonColor);
-            this.timeLabel.setFont(timerFont);
+            this.timeLabel.setFont(FontUtils.getJomhuriaFont(32));
 
-            gbc.gridy = currentRow;
             this.add(timeLabel, gbc);
-            currentRow++;
+            gbc.gridy++;
+        }
+
+        if (mission.getStatus() == MissionStatus.CREATED) {
+            mission.getRequiredSpellsSet().forEach(rs -> {
+                RoundedPanel requireSpellPanel = new RoundedPanel(5);
+            });
         }
 
         if (mission.getStatus() == MissionStatus.IN_PROGRESS || mission.getStatus() == MissionStatus.COMPLETED) {
-            Color transparentColor = new Color(0, 0, 0, 0);
             MissionAssignment[] missionAssignments = mission.getAssignments().toArray(new MissionAssignment[0]);
 
             int singleExpeditionListPanelHeight = ((int) (dim.height * 0.15));
 
-            for (int i = 0; i < missionAssignments.length; i++) {
-                MissionAssignment assignment = missionAssignments[i];
-                GuildMember assignedGuildMember = assignment.getGuildMember();
+            gbc.gridy++;
+            JLabel missionLeaderLabel = new JLabel("mission leader", SwingConstants.CENTER);
+            missionLeaderLabel.setForeground(new Color(0x6B6B6B));
+            missionLeaderLabel.setFont(FontUtils.getJomhuriaFont(16));
+            this.add(missionLeaderLabel, gbc);
+            gbc.gridy++;
+            this.add(new AssignedMemberPanel(missionAssignments[0].getGuildMember(), dim, singleExpeditionListPanelHeight), gbc);
 
-                JPanel assignedMemberPanel = new JPanel(new BorderLayout());
-                assignedMemberPanel.setPreferredSize(new Dimension(dim.width, singleExpeditionListPanelHeight));
-                assignedMemberPanel.setBackground(transparentColor);
+            gbc.gridy++;
+            JLabel missionMemberLabel = new JLabel(String.format("mission member%s", missionAssignments.length == 2 ? "" : "s"), SwingConstants.CENTER);
+            missionMemberLabel.setFont(FontUtils.getJomhuriaFont(16));
+            missionMemberLabel.setForeground(Color.WHITE);
+            this.add(missionMemberLabel, gbc);
 
-                JPanel assignedMemberDetailPanel = new JPanel(new BorderLayout());
-                int assignedMemberDetailPanelWidth = (int) (dim.width * 0.9);
-                int paddingWidth = (dim.width - assignedMemberDetailPanelWidth) / 2;
-
-                assignedMemberDetailPanel.setPreferredSize(new Dimension(assignedMemberDetailPanelWidth, singleExpeditionListPanelHeight));
-                assignedMemberDetailPanel.setBackground(transparentColor);
-
-                ImagePanel iconPanel = ImagePanel.getGuildMemberIcon(assignedGuildMember.getChosenIcon());
-                JLabel memberName = new JLabel(assignedGuildMember.getName(), SwingConstants.CENTER);
-
-                iconPanel.setPreferredSize(new Dimension(singleExpeditionListPanelHeight, singleExpeditionListPanelHeight)); // intentionally duplicated as icons are NxN
-                iconPanel.setBackground(transparentColor);
-                memberName.setPreferredSize(new Dimension(assignedMemberDetailPanelWidth - singleExpeditionListPanelHeight, singleExpeditionListPanelHeight));
-                memberName.setFont(infoFont);
-                memberName.setForeground(carbonColor);
-
-                assignedMemberDetailPanel.add(iconPanel, BorderLayout.WEST);
-                assignedMemberDetailPanel.add(memberName, BorderLayout.EAST);
-
-
-                JPanel fillerPanelLeft = new JPanel();
-                JPanel fillerPanelRight = new JPanel();
-
-                fillerPanelLeft.setPreferredSize(new Dimension(paddingWidth, singleExpeditionListPanelHeight));
-                fillerPanelLeft.setBackground(transparentColor);
-
-                fillerPanelRight.setPreferredSize(new Dimension(paddingWidth, singleExpeditionListPanelHeight));
-                fillerPanelRight.setBackground(transparentColor);
-
-                assignedMemberPanel.add(fillerPanelLeft, BorderLayout.WEST);
-                assignedMemberPanel.add(fillerPanelRight, BorderLayout.EAST);
-                assignedMemberPanel.add(assignedMemberDetailPanel, BorderLayout.CENTER);
-
-                gbc.gridy = currentRow + i;
-                this.add(assignedMemberPanel, gbc);
+            gbc.gridy++;
+            for (int i = 1; i < missionAssignments.length; i++) {
+                gbc.gridy += i;
+                this.add(new AssignedMemberPanel(missionAssignments[i].getGuildMember(), dim, singleExpeditionListPanelHeight), gbc);
             }
 
-            currentRow += missionAssignments.length;
         }
 
 
@@ -177,10 +153,10 @@ public class DetailPanel extends RoundedPanel implements Runnable {
                 @Override
                 public void mouseClicked(MouseEvent e) {
                     final boolean[] boolHolder = new boolean[1];
-                    missionSelectionCallback.run(()-> {
+                    missionSelectionCallback.run(() -> {
                         boolHolder[0] = true;
                     });
-                    if (!boolHolder[0]){
+                    if (!boolHolder[0]) {
                         unsetFlag.run();
                         thisPanel.setVisible(false);
                     }
@@ -236,5 +212,72 @@ public class DetailPanel extends RoundedPanel implements Runnable {
                 timerThread.interrupt();
             }
         }
+    }
+}
+
+class AssignedMemberPanel extends JPanel {
+    private final GuildMember guildMember;
+    private final Dimension panelDimension;
+    private final int panelHeight;
+
+    public AssignedMemberPanel(GuildMember guildMember, Dimension panelDimension, int panelHeight) {
+        this.guildMember = guildMember;
+        this.panelDimension = panelDimension;
+        this.panelHeight = panelHeight;
+
+        setLayout(new BorderLayout());
+        setPreferredSize(new Dimension(panelDimension.width, panelHeight));
+        setBackground(ColorUtils.TRANSPARENT);
+
+        JPanel detailPanel = createDetailPanel();
+
+        JPanel[] fillerPanels = createFillerPanels();
+
+        add(fillerPanels[0], BorderLayout.WEST);
+        add(fillerPanels[1], BorderLayout.EAST);
+        add(detailPanel, BorderLayout.CENTER);
+    }
+
+    private JPanel createDetailPanel() {
+        JPanel detailPanel = new JPanel(new BorderLayout());
+        int detailPanelWidth = (int) (panelDimension.width * 0.9);
+
+        detailPanel.setPreferredSize(new Dimension(detailPanelWidth, panelHeight));
+        detailPanel.setBackground(ColorUtils.TRANSPARENT);
+
+        ImagePanel iconPanel = ImagePanel.getGuildMemberIcon(guildMember.getChosenIcon());
+        iconPanel.setPreferredSize(new Dimension(panelHeight, panelHeight));
+        iconPanel.setBackground(ColorUtils.TRANSPARENT);
+
+        JLabel memberName = new JLabel(guildMember.getName(), SwingConstants.LEFT);
+        memberName.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0));
+        memberName.setPreferredSize(new Dimension(detailPanelWidth - panelHeight, panelHeight));
+        memberName.setFont(FontUtils.getJomhuriaFont(20));
+        memberName.setForeground(ColorUtils.DARK_PURPLE);
+
+        detailPanel.add(iconPanel, BorderLayout.WEST);
+        detailPanel.add(memberName, BorderLayout.EAST);
+
+        return detailPanel;
+    }
+
+    private JPanel[] createFillerPanels() {
+        int detailPanelWidth = (int) (panelDimension.width * 0.9);
+        int paddingWidth = (panelDimension.width - detailPanelWidth) / 2;
+
+        JPanel fillerLeft = new JPanel();
+        JPanel fillerRight = new JPanel();
+
+        fillerLeft.setPreferredSize(new Dimension(paddingWidth, panelHeight));
+        fillerLeft.setBackground(ColorUtils.TRANSPARENT);
+
+        fillerRight.setPreferredSize(new Dimension(paddingWidth, panelHeight));
+        fillerRight.setBackground(ColorUtils.TRANSPARENT);
+
+        return new JPanel[]{fillerLeft, fillerRight};
+    }
+
+    public GuildMember getGuildMember() {
+        return guildMember;
     }
 }

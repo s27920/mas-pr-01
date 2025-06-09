@@ -1,29 +1,23 @@
 package App.Panels.Panel;
 
 import App.Callbacks.MissionMarkerCallback;
+import App.Callbacks.MissionSelectionCallback;
 import App.Callbacks.RunnableCallback;
 import App.Models.Guild.GuildMember;
 import App.Models.Guild.MemberState;
 import App.Models.Mission.Mission;
 import App.Models.Mission.MissionStatus;
+import App.Panels.Components.DetailPanel;
 import App.Panels.Components.GuildMemberHeaderPanel;
 import App.Panels.Components.MissionMarker;
-import App.Callbacks.MissionSelectionCallback;
-import App.Panels.Components.DetailPanel;
-import App.Panels.GuiUtil.ErrorNotificationPanel;
 import App.Panels.GuiUtil.ImagePanel;
-import App.Panels.GuiUtil.RoundedPanel;
-import App.StaticUtils.ColorUtils;
 import App.StaticUtils.ErrorUtils;
-import App.StaticUtils.FontUtils;
 import App.Util.MissionMarkerCreationCountDownLatch;
 import App.Util.MissionTimerService;
 import App.Util.SuperObject;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,7 +57,6 @@ public class GuildViewPanel extends JPanel {
         for (int i = 0; i < missions.size(); i++) {
             Mission mission = missions.get(i);
 
-            Color color = new Color(168, 168, 168, 150);
             int finalI = i;
 
             MissionMarkerCallback missionCompletionCallback = (marker, layeredPane) ->{
@@ -75,7 +68,7 @@ public class GuildViewPanel extends JPanel {
 
             RunnableCallback wrapper = (onErrorCallback) -> {
                 if(mission.getStatus() == MissionStatus.CREATED){
-                    if (loggedInMember.getValidGuildMembers().stream().filter(gm -> gm.getMemberState() == MemberState.ON_STANDBY).count() < 2){
+                    if (loggedInMember.getGuild().getValidGuildMembers().stream().filter(gm -> gm.getMemberState() == MemberState.ON_STANDBY).count() < 2){
                         onErrorCallback.run();
                         ErrorUtils.showError(backgroundImagePanel, "Not enough guild members available! At least 2 members must be on standby to start a mission. Please wait for a mission to complete", dims);
                     } else {
@@ -88,7 +81,7 @@ public class GuildViewPanel extends JPanel {
             };
 
             MissionMarker missionMarker = new MissionMarker(
-                    color,
+                    new Color(168, 168, 168, 150),
                     mission.getTerritory().getTerritoryCoordinates(),
                     mission,
                     wrapper,
@@ -98,7 +91,6 @@ public class GuildViewPanel extends JPanel {
                             mission.getTerritory().getTerritoryCoordinates(),
                             new Dimension(DESC_TILE_WIDTH, DESC_TILE_HEIGHT),
                             new Dimension(720, PANEL_HEIGHT - LABEL_HEIGHT),
-                            color,
                             wrapper,
                             (shape) -> {
                                 List<MissionMarker> markersDisappeared = new ArrayList<>();

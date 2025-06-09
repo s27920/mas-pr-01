@@ -20,12 +20,9 @@ public class MainFrame extends JFrame {
 
 
         MissionSelectionPanel missionSelectionPanel = new MissionSelectionPanel(
-                ()->{
-                    cardLayout.previous(mainPanel);
-                },
-                () -> {
-//                    cardLayout.previous(mainPanel);
-                }
+                ()-> cardLayout.previous(mainPanel),
+                ()-> cardLayout.show(mainPanel, "STEP1")
+
         );
 
         GuildViewPanel guildViewPanel = new GuildViewPanel(
@@ -36,7 +33,7 @@ public class MainFrame extends JFrame {
                     missionSelectionPanel.setOnMissionCompletionCallback(runnable);
                     cardLayout.next(mainPanel);
                 },
-                ()-> cardLayout.previous(mainPanel)
+                ()-> cardLayout.show(mainPanel, "STEP1")
                 );
 
 
@@ -64,7 +61,7 @@ public class MainFrame extends JFrame {
             }
         });
 
-        this.setResizable(false);
+        this.setResizable(true);
         this.setSize(new Dimension(720, 560));
     }
 

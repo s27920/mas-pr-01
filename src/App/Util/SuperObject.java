@@ -9,6 +9,8 @@ public class SuperObject implements Serializable {
     private static Map<Class, Map<String, Object>> staticValues = new HashMap<>();
     public static final String SUPER_OBJ_FILE = "objs.jso";
 
+
+
     public SuperObject() {
         addObj();
     }

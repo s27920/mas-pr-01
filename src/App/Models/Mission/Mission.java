@@ -9,6 +9,7 @@ import App.Models.Magic.Spells.Spell;
 import App.Util.MissionTimerService;
 import App.Util.SuperObject;
 
+import java.io.IOException;
 import java.util.*;
 
 public class Mission extends SuperObject {
@@ -22,6 +23,7 @@ public class Mission extends SuperObject {
 
     private String name;
     private String description;
+    private String[] possibleScenarios;
 
     public static final long MISSION_COMPLETION_TIME_MILLIS_BASELINE = 15000;
     private long missionCompletionTime = -1;
@@ -42,6 +44,12 @@ public class Mission extends SuperObject {
         this.startTimeMillis = System.currentTimeMillis();
         this.status = MissionStatus.IN_PROGRESS;
         MissionTimerService.getInstance().registerMission(this);
+
+        try {
+            SuperObject.writeObjects();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
     public boolean hasCompatibleSpell(KnownSpell knownSpell) {
         return requiredSpellsSet.stream().anyMatch(required -> required.getRequiredSpell().equals(knownSpell.getSpell()) && required.getKnownLevel() <= knownSpell.getMasteryLevel());
@@ -51,6 +59,12 @@ public class Mission extends SuperObject {
         // TODO make injuries possible
         this.assignments.forEach(assignment -> assignment.getGuildMember().setMemberState(MemberState.ON_STANDBY));
         this.status = MissionStatus.COMPLETED;
+
+        try {
+            SuperObject.writeObjects();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public MissionStatus getStatus() {
@@ -59,6 +73,15 @@ public class Mission extends SuperObject {
 
     public long getStartTimeMillis() {
         return startTimeMillis;
+    }
+
+    public boolean validateMissionCompleted(){
+        return status == MissionStatus.IN_PROGRESS && getMissionRemainingTime() < 0;
+    }
+
+    public long getMissionRemainingTime(){
+        long passedTime = System.currentTimeMillis() - startTimeMillis;
+        return getMissionCompletionTime() - passedTime;
     }
 
     private void calculateMissionCompletionTime() {
@@ -87,12 +110,21 @@ public class Mission extends SuperObject {
             }
         }
 
-        // required Spells
         for (Map.Entry<Spell, Integer> requiredSpellMastery : knowsRequiredSpellsMaxLevel.entrySet()) {
             spellScalar *= 10.0 / requiredSpellMastery.getValue();
         }
 
-        this.missionCompletionTime = ((long) (Mission.MISSION_COMPLETION_TIME_MILLIS_BASELINE * difficultyScalar * spellScalar));
+        MissionAssignment missionAssignment = assignments.stream().findFirst().orElse(null);
+        double territoryOwnerShipScalar;
+        if (missionAssignment != null){
+            territoryOwnerShipScalar = missionAssignment.getGuildMember().getGuild().getControlledTerritories().contains(territory) ? 1.0 : 1.5;
+        } else {
+            throw new IllegalArgumentException();
+        }
+
+        double territoryAccessibilityScalar = 1.0 + 0.1 * territory.getDangerLevel();
+
+        this.missionCompletionTime = ((long) (Mission.MISSION_COMPLETION_TIME_MILLIS_BASELINE * difficultyScalar * spellScalar * territoryAccessibilityScalar * territoryOwnerShipScalar));
     }
 
     public long getMissionCompletionTime() {
@@ -128,6 +160,16 @@ public class Mission extends SuperObject {
         this.rewards = rewards;
     }
 
+    public String[] getPossibleScenarios() {
+        return possibleScenarios;
+    }
+
+    public void setPossibleScenarios(String[] possibleScenarios) {
+        if (possibleScenarios != null && possibleScenarios.length > 0){
+            this.possibleScenarios = possibleScenarios;
+        }
+    }
+
     public String getName() {
         return name;
     }
@@ -140,12 +182,16 @@ public class Mission extends SuperObject {
         this.assignments = assignments;
     }
 
-    public void getAssignedToGuildMember(GuildMember guildMember){
+    public void getAssignedToGuildMember(GuildMember guildMember, boolean isLeader){
         this.assignments.add(new MissionAssignment(guildMember, this));
     }
 
     public void addMissionAssignment(MissionAssignment missionAssignment) {
-        this.assignments.add(missionAssignment);
+        if (this.assignments.size() < 4){
+            this.assignments.add(missionAssignment);
+        }else {
+            throw new IllegalArgumentException("mission cannot have more than 4 assigned members");
+        }
     }
 
     public void addMissionRequirement(RequiredSpell requiredSpell) {

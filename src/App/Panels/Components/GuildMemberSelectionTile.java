@@ -62,14 +62,12 @@ public class GuildMemberSelectionTile extends JPanel {
 
         Font labelFont = FontUtils.getJomhuriaFont(24);
 
-        Color panelColor = new Color(94, 94, 94);
-
         KnownSpell[] knownSpells = member.getKnownSpells().toArray(new KnownSpell[0]);
         for (int i1 = 0; i1 < Math.min(3, member.getKnownSpells().size()); i1++) {
             rgbc.gridy++;
 
             Dimension panelSize = new Dimension(((int) (this.getPreferredSize().width * 0.58)), 20);
-            RoundedPanel panel = new RoundedPanel(panelSize, 5, panelColor);
+            RoundedPanel panel = new RoundedPanel(panelSize, 5, ColorUtils.GREY);
             panel.setLayout(new BorderLayout());
 
             JLabel spellNameLabel = new JLabel(knownSpells[i1].getSpell().getName(), SwingConstants.RIGHT);

@@ -7,6 +7,7 @@ import App.Models.RealEstate.Domicile;
 import App.Models.RealEstate.Ownership;
 import App.Util.SuperObject;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -17,25 +18,17 @@ public class Wizard extends SuperObject {
     private Set<SpellTome> ownedTomes;
     private int chosenIcon;
 
+    private static final Comparator<KnownSpell> KNOWN_SPELL_COMPARATOR = new KnownSpellComparator();
+
+
     public Wizard(String name, int chosenIcon) {
         this.name = name;
         this.chosenIcon = chosenIcon;
-        this.knownSpells = new TreeSet<>(
-                Comparator.comparingInt(KnownSpell::getMasteryLevel)
-                        .reversed()
-                        .thenComparing(ks -> ks.getSpell().getName())
-        );
+        this.knownSpells = new TreeSet<>(KNOWN_SPELL_COMPARATOR);
         this.ownedDomiciles = new HashSet<>();
         this.ownedTomes = new HashSet<>();
     }
 
-    public Wizard(String name, SortedSet<KnownSpell> knownSpells, Set<Ownership> ownedDomiciles, Set<SpellTome> ownedTomes, int chosenIcon) {
-        this.name = name;
-        this.knownSpells = knownSpells;
-        this.ownedDomiciles = ownedDomiciles;
-        this.ownedTomes = ownedTomes;
-        this.chosenIcon = chosenIcon;
-    }
 
     public void purchaseDomicile(Domicile domicile){
         this.ownedDomiciles.add(new Ownership(LocalDate.now(), this, domicile));
@@ -46,8 +39,10 @@ public class Wizard extends SuperObject {
     }
 
     public void addKnownSpell(KnownSpell spell){
+        System.out.println("added Known Spell");
         knownSpells.add(spell);
     }
+
     public void removeFromKnownSpells(KnownSpell spell){
         knownSpells.remove(spell);
     }
@@ -78,8 +73,21 @@ public class Wizard extends SuperObject {
     }
 
     public void rebuildSortedTree() {
-        SortedSet<KnownSpell> sortedSet = new TreeSet<>();
+        SortedSet<KnownSpell> sortedSet = new TreeSet<>(KNOWN_SPELL_COMPARATOR);
         sortedSet.addAll(this.knownSpells);
         this.knownSpells = sortedSet;
+    }
+}
+
+class KnownSpellComparator implements Comparator<KnownSpell>, Serializable {
+    @Override
+    public int compare(KnownSpell ks1, KnownSpell ks2) {
+        int masteryCompare = Integer.compare(ks2.getMasteryLevel(), ks1.getMasteryLevel());
+        if (masteryCompare != 0) return masteryCompare;
+
+        int nameCompare = ks1.getSpell().getName().compareTo(ks2.getSpell().getName());
+        if (nameCompare != 0) return nameCompare;
+
+        return Integer.compare(ks1.hashCode(), ks2.hashCode());
     }
 }
