@@ -38,7 +38,9 @@ public class Territory extends SuperObject {
 
     public void setGuild(Guild guild) {
         this.guild = guild;
-        guild.addToOwnedTerritories(this);
+        if (guild != null){
+            guild.addToOwnedTerritories(this);
+        }
     }
 
     public void setPopulation(int population) {
@@ -60,6 +62,7 @@ public class Territory extends SuperObject {
     public Coords getTerritoryCoordinates() {
         return territoryCoordinates;
     }
+
 
     public String getTerritoryName() {
         return territoryName;

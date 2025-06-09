@@ -15,7 +15,6 @@ import java.awt.event.MouseEvent;
 public class WizardPanel extends RoundedPanel {
     private final JPanel currPanel;
     private final MemberSelectionCallback switchCardsCallback;
-    private final JPanel textPanel;
     private final ImagePanel imagePanel;
 
     public WizardPanel(GuildMember guildMember, MemberSelectionCallback callback) {
@@ -26,7 +25,7 @@ public class WizardPanel extends RoundedPanel {
 
         this.setLayout(new BorderLayout());
 
-        textPanel = new JPanel();
+        JPanel textPanel = new JPanel();
         textPanel.setBackground(ColorUtils.TRANSPARENT);
 
         textPanel.setLayout(new GridBagLayout());

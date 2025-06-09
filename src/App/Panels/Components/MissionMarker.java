@@ -72,7 +72,6 @@ public class MissionMarker extends JPanel {
 
         if (mission.validateMissionCompleted()) {
             this.borderColor = Color.GRAY;
-            System.out.println("huh");
         }
 
         this.x1 = coords.x() - (DIAMETER + BORDER_THICKNESS) / 2;
@@ -83,6 +82,7 @@ public class MissionMarker extends JPanel {
         this.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                Coords territoryCoordinates = mission.getTerritory().getTerritoryCoordinates();
                 callback.run(()->{});
             }
 

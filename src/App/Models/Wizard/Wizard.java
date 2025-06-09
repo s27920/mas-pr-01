@@ -5,6 +5,7 @@ import App.Models.Magic.Spells.Spell;
 import App.Models.Magic.SpellTome;
 import App.Models.RealEstate.Domicile;
 import App.Models.RealEstate.Ownership;
+import App.Util.KnownSpellComparator;
 import App.Util.SuperObject;
 
 import java.io.Serializable;
@@ -29,23 +30,28 @@ public class Wizard extends SuperObject {
         this.ownedTomes = new HashSet<>();
     }
 
+    public boolean removeFromKnownSpells(KnownSpell knownSpell){
+        return this.knownSpells.remove(knownSpell);
+    }
+    public boolean addToKnownSpells(KnownSpell knownSpell){
+        return this.knownSpells.add(knownSpell);
+    }
+
 
     public void purchaseDomicile(Domicile domicile){
         this.ownedDomiciles.add(new Ownership(LocalDate.now(), this, domicile));
     }
 
-    public void learnSpell(Spell spell){
-        this.knownSpells.add(new KnownSpell(this, spell, 1));
+    public KnownSpell learnSpell(Spell spell){
+        KnownSpell knownSpell = new KnownSpell(this, spell, 1);
+        this.knownSpells.add(knownSpell);
+        return knownSpell;
     }
 
     public void addKnownSpell(KnownSpell spell){
-        System.out.println("added Known Spell");
         knownSpells.add(spell);
     }
 
-    public void removeFromKnownSpells(KnownSpell spell){
-        knownSpells.remove(spell);
-    }
 
     public void addToOwned(Ownership ownership) {
 
@@ -72,22 +78,5 @@ public class Wizard extends SuperObject {
         return name;
     }
 
-    public void rebuildSortedTree() {
-        SortedSet<KnownSpell> sortedSet = new TreeSet<>(KNOWN_SPELL_COMPARATOR);
-        sortedSet.addAll(this.knownSpells);
-        this.knownSpells = sortedSet;
-    }
 }
 
-class KnownSpellComparator implements Comparator<KnownSpell>, Serializable {
-    @Override
-    public int compare(KnownSpell ks1, KnownSpell ks2) {
-        int masteryCompare = Integer.compare(ks2.getMasteryLevel(), ks1.getMasteryLevel());
-        if (masteryCompare != 0) return masteryCompare;
-
-        int nameCompare = ks1.getSpell().getName().compareTo(ks2.getSpell().getName());
-        if (nameCompare != 0) return nameCompare;
-
-        return Integer.compare(ks1.hashCode(), ks2.hashCode());
-    }
-}

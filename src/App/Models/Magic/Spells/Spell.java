@@ -8,6 +8,7 @@ import java.util.*;
 
 public class Spell extends SuperObject {
     private final String name;
+    private double range;
     private final Set<KnownSpell> knownSpells;
     private final Set<RequiredSpell> missionsWhereRequired;
     private final HashMap<Class<?>, ISpellMarker<?>> spellValueStorage;
@@ -76,6 +77,16 @@ public class Spell extends SuperObject {
 
     public String[] getSupportEffects() throws Exception {
         return getValue(SupportSpell.class);
+    }
+
+    public double getRange() {
+        return range;
+    }
+
+    public void setRange(double range) {
+        if (range > 0){
+            this.range = range;
+        }
     }
 
     public boolean isDamageSpell() {

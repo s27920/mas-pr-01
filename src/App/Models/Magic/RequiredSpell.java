@@ -43,4 +43,10 @@ public class RequiredSpell implements Serializable {
     public int getKnownLevel() {
         return knownLevel;
     }
+
+    public void setKnownLevel(int knownLevel) {
+        if (knownLevel > 0 && knownLevel <= 10){
+            this.knownLevel = knownLevel;
+        }
+    }
 }

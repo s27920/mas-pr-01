@@ -176,12 +176,9 @@ public class DetailPanel extends RoundedPanel implements Runnable {
                 unsetFlag.run();
                 thisPanel.setVisible(false);
 
-                int accum = 0;
                 for (MissionMarker marker : hiddenMarkers) {
-                    accum++;
                     marker.setVisible(true);
                 }
-                System.out.println("made: " + accum + " markers visible");
 
 //
 //                if (mission.getStatus() == MissionStatus.IN_PROGRESS && timerThread != null) {

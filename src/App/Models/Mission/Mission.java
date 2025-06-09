@@ -127,6 +127,16 @@ public class Mission extends SuperObject {
         this.missionCompletionTime = ((long) (Mission.MISSION_COMPLETION_TIME_MILLIS_BASELINE * difficultyScalar * spellScalar * territoryAccessibilityScalar * territoryOwnerShipScalar));
     }
 
+    @Override
+    public void removeObj() {
+        for (MissionAssignment missionAssignment : assignments) {
+            missionAssignment.removeObj();
+        }
+        assignments.clear();
+        super.removeObj();
+
+    }
+
     public long getMissionCompletionTime() {
         if (missionCompletionTime == -1){
             calculateMissionCompletionTime();
@@ -134,14 +144,14 @@ public class Mission extends SuperObject {
         return missionCompletionTime;
     }
 
-    public Set<MissionAssignment> getAssignments() {
-        return Collections.unmodifiableSet(assignments);
-    }
-
     public void freeMembers(){
         assignments.forEach(ma->{
             ma.getGuildMember().setMemberState(MemberState.ON_STANDBY);
         });
+    }
+
+    public Set<MissionAssignment> getAssignments() {
+        return Collections.unmodifiableSet(assignments);
     }
 
     public Territory getTerritory() {

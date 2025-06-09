@@ -40,7 +40,6 @@ public class MissionTimerService {
             System.out.println("got through");
             if (registeredMissions.size() > 0){
                 registeredMissions.forEach((m)->{
-                    System.out.println(m.getName());
                     createTask(m);
                 });
             }else{

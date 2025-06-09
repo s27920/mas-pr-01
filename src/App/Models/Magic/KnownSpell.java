@@ -19,9 +19,19 @@ public class KnownSpell extends SuperObject implements Comparable<KnownSpell> {
     }
 
     public void setMasteryLevel(int masteryLevel) {
-        if (masteryLevel > 0 && masteryLevel <= 10){
-            this.masteryLevel = masteryLevel;
+        if (masteryLevel > 0 && masteryLevel <= 10 && masteryLevel != this.masteryLevel) {
+            if (wizard != null) {
+                wizard.removeFromKnownSpells(this);
+                this.masteryLevel = masteryLevel;
+                wizard.addKnownSpell(this);
+            } else {
+                this.masteryLevel = masteryLevel;
+            }
         }
+    }
+
+    public void levelUp(){
+        setMasteryLevel(this.masteryLevel + 1);
     }
 
     public Spell getSpell() {
