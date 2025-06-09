@@ -38,8 +38,8 @@ public class GuildMemberHeaderPanel extends JPanel {
         wizardGuildLabel.setForeground(ColorUtils.CREAM);
         wizardNameLabel.setForeground(ColorUtils.CREAM);
 
+        wizardNameLabel.setFont(FontUtils.getJomhuriaFont(32));
         wizardGuildLabel.setFont(FontUtils.getJomhuriaFont(16));
-        wizardNameLabel.setFont(FontUtils.getJomhuriaFont(24));
 
         wizardGuildLabel.setHorizontalAlignment(SwingConstants.CENTER);
         wizardNameLabel.setHorizontalAlignment(SwingConstants.CENTER);

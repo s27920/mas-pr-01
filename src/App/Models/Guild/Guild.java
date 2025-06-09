@@ -70,6 +70,10 @@ public class Guild extends SuperObject {
         return guildName;
     }
 
+    public String getMotto() {
+        return motto;
+    }
+
     public int getTotalMembers(){
         return members.size();
     }

@@ -39,6 +39,8 @@ public class MissionSelectionPanel extends JPanel {
     private App.Util.Iterable[] selectedMemberPanels;
     private int selectedMemberPointer;
 
+    private final JPanel topPanel;
+
     private final ImagePanel clippedImagePanel;
     private final JLabel missionDifficultyLabel;
     private final JPanel textWrapperPanel;
@@ -84,7 +86,7 @@ public class MissionSelectionPanel extends JPanel {
 
         this.guildMemberToPanelMapping = new HashMap<>();
 
-        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel = new JPanel(new BorderLayout());
         topPanel.setPreferredSize(new Dimension(WIDTH, 40));
         topPanel.setBackground(ColorUtils.CARBON);
         headerPanel = new GuildMemberHeaderPanel(()->{
@@ -347,6 +349,7 @@ public class MissionSelectionPanel extends JPanel {
         super.setBounds(x, y, width, height);
         this.renderDims[0] = width;
         this.renderDims[1] = height;
+
     }
 
     public void populateMemberSelectionList() {

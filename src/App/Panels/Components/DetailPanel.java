@@ -24,6 +24,8 @@ public class DetailPanel extends RoundedPanel implements Runnable {
     private final JLabel statusLabel;
     private Thread timerThread;
     private JLabel timeLabel;
+    private JLabel guildInfoLabel;
+
 
     private final Mission mission;
     private final GuildMember guildMember;
@@ -46,7 +48,7 @@ public class DetailPanel extends RoundedPanel implements Runnable {
             ShapeIntersectCallback shapeIntersectCallback,
             Runnable unsetFlag
     ) {
-        super(dim, ROUNDING, new Color(166,166,166, 128));
+        super(dim, ROUNDING, new Color(166,166,166, 196));
         this.setBorderColor(ColorUtils.CARBON);
         this.setBorderWidth(2);
         this.guildMember = member;
@@ -88,34 +90,39 @@ public class DetailPanel extends RoundedPanel implements Runnable {
         }
 
         if (mission.getStatus() == MissionStatus.CREATED) {
+            JLabel infoLabel = new JLabel("Required spells", SwingConstants.CENTER);
+            infoLabel.setFont(FontUtils.getJomhuriaFont(20));
+            infoLabel.setForeground(ColorUtils.CARBON);
+            this.add(infoLabel, gbc);
+            gbc.gridy++;
             mission.getRequiredSpellsSet().forEach(rs -> {
-                RoundedPanel requireSpellPanel = new RoundedPanel(5);
+                JLabel requiredSpellLabel = new JLabel(String.format("%s lvl. %s", rs.getRequiredSpell().getName(), rs.getKnownLevel()), SwingConstants.CENTER);
+                requiredSpellLabel.setFont(FontUtils.getJomhuriaFont(16));
+                requiredSpellLabel.setForeground(ColorUtils.CARBON);
+                this.add(requiredSpellLabel, gbc);
+                gbc.gridy++;
+
             });
         }
 
         if (mission.getStatus() == MissionStatus.IN_PROGRESS || mission.getStatus() == MissionStatus.COMPLETED) {
             MissionAssignment[] missionAssignments = mission.getAssignments().toArray(new MissionAssignment[0]);
 
+            guildInfoLabel = new JLabel(String.format("%s by: %s", mission.getStatus() == MissionStatus.IN_PROGRESS ? "undertaken" : "completed", mission.getAssignments().iterator().next().getGuildMember().getGuild().getGuildName()), SwingConstants.CENTER);
+            guildInfoLabel.setForeground(ColorUtils.CARBON);
+            guildInfoLabel.setFont(FontUtils.getJomhuriaFont(20));
+            this.add(guildInfoLabel, gbc);
+            gbc.gridy++;
+
             int singleExpeditionListPanelHeight = ((int) (dim.height * 0.15));
 
-            gbc.gridy++;
-            JLabel missionLeaderLabel = new JLabel("mission leader", SwingConstants.CENTER);
-            missionLeaderLabel.setForeground(new Color(0x6B6B6B));
-            missionLeaderLabel.setFont(FontUtils.getJomhuriaFont(16));
-            this.add(missionLeaderLabel, gbc);
-            gbc.gridy++;
-            this.add(new AssignedMemberPanel(missionAssignments[0].getGuildMember(), dim, singleExpeditionListPanelHeight), gbc);
-
-            gbc.gridy++;
-            JLabel missionMemberLabel = new JLabel(String.format("mission member%s", missionAssignments.length == 2 ? "" : "s"), SwingConstants.CENTER);
-            missionMemberLabel.setFont(FontUtils.getJomhuriaFont(16));
-            missionMemberLabel.setForeground(Color.WHITE);
-            this.add(missionMemberLabel, gbc);
-
-            gbc.gridy++;
-            for (int i = 1; i < missionAssignments.length; i++) {
+            for (int i = 0; i < missionAssignments.length; i++) {
                 gbc.gridy += i;
-                this.add(new AssignedMemberPanel(missionAssignments[i].getGuildMember(), dim, singleExpeditionListPanelHeight), gbc);
+                AssignedMemberPanel assignedMemberPanel = new AssignedMemberPanel(missionAssignments[i].getGuildMember(), dim, singleExpeditionListPanelHeight);
+                this.add(assignedMemberPanel, gbc);
+                if (missionAssignments[0].getMissionLeader() == missionAssignments[i].getGuildMember()){
+                    assignedMemberPanel.makeLeader();
+                }
             }
 
         }
@@ -169,13 +176,17 @@ public class DetailPanel extends RoundedPanel implements Runnable {
                 unsetFlag.run();
                 thisPanel.setVisible(false);
 
+                int accum = 0;
                 for (MissionMarker marker : hiddenMarkers) {
+                    accum++;
                     marker.setVisible(true);
                 }
+                System.out.println("made: " + accum + " markers visible");
 
-                if (mission.getStatus() == MissionStatus.IN_PROGRESS && timerThread != null) {
-                    timerThread.interrupt();
-                }
+//
+//                if (mission.getStatus() == MissionStatus.IN_PROGRESS && timerThread != null) {
+//                    timerThread.interrupt();
+//                }
             }
         });
     }
@@ -199,6 +210,7 @@ public class DetailPanel extends RoundedPanel implements Runnable {
                 if (durationMillis <= 0) {
                     mission.completeMission();
                     statusLabel.setText(String.format("Mission status: %s", mission.getStatus().name().toLowerCase().replaceAll("_", " ")));
+                    guildInfoLabel.setText(String.format("completed by: %s", mission.getAssignments().iterator().next().getGuildMember().getGuild().getGuildName()));
                     timerThread.interrupt();
                 } else {
                     long days = duration.toDays();
@@ -215,69 +227,3 @@ public class DetailPanel extends RoundedPanel implements Runnable {
     }
 }
 
-class AssignedMemberPanel extends JPanel {
-    private final GuildMember guildMember;
-    private final Dimension panelDimension;
-    private final int panelHeight;
-
-    public AssignedMemberPanel(GuildMember guildMember, Dimension panelDimension, int panelHeight) {
-        this.guildMember = guildMember;
-        this.panelDimension = panelDimension;
-        this.panelHeight = panelHeight;
-
-        setLayout(new BorderLayout());
-        setPreferredSize(new Dimension(panelDimension.width, panelHeight));
-        setBackground(ColorUtils.TRANSPARENT);
-
-        JPanel detailPanel = createDetailPanel();
-
-        JPanel[] fillerPanels = createFillerPanels();
-
-        add(fillerPanels[0], BorderLayout.WEST);
-        add(fillerPanels[1], BorderLayout.EAST);
-        add(detailPanel, BorderLayout.CENTER);
-    }
-
-    private JPanel createDetailPanel() {
-        JPanel detailPanel = new JPanel(new BorderLayout());
-        int detailPanelWidth = (int) (panelDimension.width * 0.9);
-
-        detailPanel.setPreferredSize(new Dimension(detailPanelWidth, panelHeight));
-        detailPanel.setBackground(ColorUtils.TRANSPARENT);
-
-        ImagePanel iconPanel = ImagePanel.getGuildMemberIcon(guildMember.getChosenIcon());
-        iconPanel.setPreferredSize(new Dimension(panelHeight, panelHeight));
-        iconPanel.setBackground(ColorUtils.TRANSPARENT);
-
-        JLabel memberName = new JLabel(guildMember.getName(), SwingConstants.LEFT);
-        memberName.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0));
-        memberName.setPreferredSize(new Dimension(detailPanelWidth - panelHeight, panelHeight));
-        memberName.setFont(FontUtils.getJomhuriaFont(20));
-        memberName.setForeground(ColorUtils.DARK_PURPLE);
-
-        detailPanel.add(iconPanel, BorderLayout.WEST);
-        detailPanel.add(memberName, BorderLayout.EAST);
-
-        return detailPanel;
-    }
-
-    private JPanel[] createFillerPanels() {
-        int detailPanelWidth = (int) (panelDimension.width * 0.9);
-        int paddingWidth = (panelDimension.width - detailPanelWidth) / 2;
-
-        JPanel fillerLeft = new JPanel();
-        JPanel fillerRight = new JPanel();
-
-        fillerLeft.setPreferredSize(new Dimension(paddingWidth, panelHeight));
-        fillerLeft.setBackground(ColorUtils.TRANSPARENT);
-
-        fillerRight.setPreferredSize(new Dimension(paddingWidth, panelHeight));
-        fillerRight.setBackground(ColorUtils.TRANSPARENT);
-
-        return new JPanel[]{fillerLeft, fillerRight};
-    }
-
-    public GuildMember getGuildMember() {
-        return guildMember;
-    }
-}

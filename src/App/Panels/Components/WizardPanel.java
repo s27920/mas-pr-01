@@ -19,7 +19,7 @@ public class WizardPanel extends RoundedPanel {
     private final ImagePanel imagePanel;
 
     public WizardPanel(GuildMember guildMember, MemberSelectionCallback callback) {
-        super(new Dimension(1,1), 15, new Color(64, 64, 64));
+        super(new Dimension(1, 1), 15, new Color(64, 64, 64));
         this.switchCardsCallback = callback;
         this.currPanel = this;
         this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -38,7 +38,7 @@ public class WizardPanel extends RoundedPanel {
         gbc.weightx = 1.0;
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.insets = new Insets(3,0,3,0);
+        gbc.insets = new Insets(3, 0, 3, 0);
 
         JLabel nameLabel = new JLabel(guildMember.getName(), SwingConstants.CENTER);
         nameLabel.setForeground(ColorUtils.CREAM);
@@ -52,11 +52,34 @@ public class WizardPanel extends RoundedPanel {
         textPanel.add(clanLabel, gbc);
 
 
+        JPanel wrapperPanel = new JPanel(new GridBagLayout());
+
+        GridBagConstraints wrapperGbc = new GridBagConstraints();
+        wrapperGbc.weightx = 1.0;
+        wrapperGbc.weighty = 1.0;
+        wrapperGbc.fill = GridBagConstraints.BOTH;
+        wrapperGbc.gridy = 0;
+        wrapperGbc.gridx = 0;
+        wrapperGbc.anchor = GridBagConstraints.NORTH;
+        wrapperGbc.insets = new Insets(0, 3, 0, 3);
+
         imagePanel = ImagePanel.getGuildIcon(guildMember.getGuild().getChosenIcon());
         imagePanel.setBackground(ColorUtils.TRANSPARENT);
+        wrapperPanel.add(imagePanel, wrapperGbc);
+        wrapperGbc.gridy++;
+        wrapperGbc.weighty = 0.0;
+        wrapperGbc.fill = GridBagConstraints.BOTH;
+        wrapperGbc.insets = new Insets(0, 0, 0, 0);
+
+        JLabel mottoLabel = new JLabel(guildMember.getGuild().getMotto(), SwingConstants.CENTER);
+        mottoLabel.setFont(FontUtils.getJomhuriaFont(18));
+        mottoLabel.setForeground(ColorUtils.CREAM);
+        wrapperPanel.add(mottoLabel, wrapperGbc);
+        wrapperPanel.setBackground(ColorUtils.TRANSPARENT);
+
 
         this.add(textPanel, BorderLayout.CENTER);
-        this.add(imagePanel, BorderLayout.EAST);
+        this.add(wrapperPanel, BorderLayout.EAST);
 
         this.addMouseListener(new MouseAdapter() {
             @Override
@@ -75,6 +98,7 @@ public class WizardPanel extends RoundedPanel {
             }
         });
     }
+
     @Override
     public void setBounds(int x, int y, int width, int height) {
         super.setBounds(x, y, width, height);

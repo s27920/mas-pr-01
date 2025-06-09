@@ -34,7 +34,7 @@ public class JavaObjectSetupTesting {
         Coords[] coords = getNUniquePois(n);
 
         Guild wizardGuild = new Guild("Wizards", "Vis per laborem", 1);
-        Guild druidGuild = new Guild("Druids", "Gutta cavat lapidem non vi, sed saepe cadendo", 3);
+        Guild druidGuild = new Guild("Druids", "Omnia subiecta sunt naturae", 3);
         Guild warlockGuild = new Guild("Warlocks", "Magna otia caeli", 2);
 
         Set<MissionReward> missionRewards = new HashSet<>();

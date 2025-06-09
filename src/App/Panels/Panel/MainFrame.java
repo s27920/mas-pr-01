@@ -61,7 +61,7 @@ public class MainFrame extends JFrame {
             }
         });
 
-        this.setResizable(true);
+        this.setResizable(false);
         this.setSize(new Dimension(720, 560));
     }
 

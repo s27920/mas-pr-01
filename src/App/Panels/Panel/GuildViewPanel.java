@@ -27,8 +27,8 @@ public class GuildViewPanel extends JPanel {
     private final int LABEL_HEIGHT = 40;
     private final int PANEL_HEIGHT = 520;
 
-    private final int DESC_TILE_WIDTH = 150;
-    private final int DESC_TILE_HEIGHT = 200;
+    private final int DESC_TILE_WIDTH = 175;
+    private final int DESC_TILE_HEIGHT = 240;
 
     private final List<MissionMarker> missionMarkers = new ArrayList<>();
     private final GuildMemberHeaderPanel headerPanel;
@@ -66,6 +66,7 @@ public class GuildViewPanel extends JPanel {
                 layeredPane.repaint();
             };
 
+
             RunnableCallback wrapper = (onErrorCallback) -> {
                 if(mission.getStatus() == MissionStatus.CREATED){
                     if (loggedInMember.getGuild().getValidGuildMembers().stream().filter(gm -> gm.getMemberState() == MemberState.ON_STANDBY).count() < 2){
@@ -79,6 +80,7 @@ public class GuildViewPanel extends JPanel {
                     }
                 }
             };
+
 
             MissionMarker missionMarker = new MissionMarker(
                     new Color(168, 168, 168, 150),

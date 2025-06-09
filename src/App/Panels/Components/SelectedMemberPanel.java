@@ -13,7 +13,7 @@ public class SelectedMemberPanel extends JPanel implements App.Util.Iterable {
     private int index;
     private final JPanel paddingPanel;
     private final int imageDims;
-    private boolean isLeader;
+    private boolean isLeader = false;
 
     public SelectedMemberPanel(
             GuildMember guildMember,

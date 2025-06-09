@@ -21,7 +21,6 @@ public class MissionMarker extends JPanel {
     private final JPanel thisPoint;
     private GuildMember selectedMember;
     private Mission mission;
-    private boolean showedError;
 
     private final int DIAMETER = 20;
     private final int BORDER_THICKNESS = 2;
@@ -149,6 +148,12 @@ public class MissionMarker extends JPanel {
         };
         this.revalidate();
         this.repaint();
+    }
+
+    @Override
+    public void setVisible(boolean aFlag) {
+        validateColor();
+        super.setVisible(aFlag);
     }
 
     public void setSelectedMember(GuildMember selectedMember) {
