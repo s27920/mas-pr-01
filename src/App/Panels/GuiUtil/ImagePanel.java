@@ -44,7 +44,7 @@ public class ImagePanel extends JPanel {
         return new ImagePanel("resources/leader-marker.png");
     }
     public static ImagePanel getFastForwardButton(){
-        return new ImagePanel("resources/image-removebg-preview.png");
+        return new ImagePanel("resources/ff-btn.png");
     }
 
     private BufferedImage readImageFromFile(String path){

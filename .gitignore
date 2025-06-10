@@ -400,3 +400,8 @@ FodyWeavers.xsd
 *.sln.iml
 
 /out
+
+/out/production
+/out/production/mas-p-01
+
+*.jso
