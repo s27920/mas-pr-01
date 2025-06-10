@@ -25,14 +25,6 @@ public class Spell extends SuperObject {
         }
     }
 
-    public Spell(String name) {
-        super();
-        this.name = name;
-        this.knownSpells = new HashSet<>();
-        this.missionsWhereRequired = new HashSet<>();
-        this.spellValueStorage = new HashMap<>();
-    }
-
     @Override
     public void removeObj() {
         ISpellMarker<?>[] spellsPartIncluded = spellValueStorage.values().toArray(new ISpellMarker<?>[0]);

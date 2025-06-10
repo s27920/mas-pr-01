@@ -52,10 +52,13 @@ public class Mission extends SuperObject {
 
     public static boolean isFlippedMissionTimeDevScalar(){
         if (missionTimeDevScalar > 0.95 && missionTimeDevScalar < 1.05) {
-            System.out.println(false);
             return false;
         }
         return true;
+    }
+
+    public static void resetMissionScalar(){
+        missionTimeDevScalar = 1.0;
     }
 
     public void startMission(){
@@ -85,14 +88,6 @@ public class Mission extends SuperObject {
         }
     }
 
-    public MissionStatus getStatus() {
-        return status;
-    }
-
-    public long getStartTimeMillis() {
-        return startTimeMillis;
-    }
-
     public boolean validateMissionCompleted(){
         return status == MissionStatus.IN_PROGRESS && getMissionRemainingTime() < 0;
     }
@@ -102,6 +97,33 @@ public class Mission extends SuperObject {
         return getMissionCompletionTime() - passedTime;
     }
 
+    public long getMissionCompletionTime() {
+        if (missionCompletionTime == -1){
+            calculateMissionCompletionTime();
+        }
+        return missionCompletionTime;
+    }
+    public long getMissionCompletionTimeForced() {
+        calculateMissionCompletionTime();
+        return missionCompletionTime;
+    }
+
+    /**
+     * calculates the time needed to complete a mission based on a number of factors such as:
+     * <ul>
+     *     <li>the composition of the expedition team</li>
+     *     <li>whether the guild dispatching the expedition has control of the territory on which the mission takes place</li>
+     *     <li>whether said territory has access restrictions</li>
+     *     <li>mission difficulty level</li>
+     *     <li>whether we are currently in dev mode (x10) mission completion speed</li>
+     *   </ul>
+     * is automatically called upon using <br/><br/>
+     *   <b>getMissionCompletionTime() </b><br/><br/>
+     * which checks whether the time has already been calculated <br/>
+     * if yes it uses the ready-made number, otherwise calculating it on the fly <br/>
+     * ideally should not be used as a standalone function <br/>
+     * as it will result in unnecessary calculations
+     */
     private void calculateMissionCompletionTime() {
         double difficultyScalar = 1;
         difficultyScalar += getDifficulty().ordinal() / 4.0;
@@ -155,17 +177,18 @@ public class Mission extends SuperObject {
 
     }
 
-    public long getMissionCompletionTime() {
-        if (missionCompletionTime == -1){
-            calculateMissionCompletionTime();
+    public void addMissionAssignment(MissionAssignment missionAssignment) {
+        if (this.assignments.size() < 4){
+            this.assignments.add(missionAssignment);
+        }else {
+            throw new IllegalArgumentException("mission cannot have more than 4 assigned members");
         }
-        return missionCompletionTime;
     }
 
+
+
     public void freeMembers(){
-        assignments.forEach(ma->{
-            ma.getGuildMember().setMemberState(MemberState.ON_STANDBY);
-        });
+        assignments.forEach(ma-> ma.getGuildMember().setMemberState(MemberState.ON_STANDBY));
     }
 
     public Set<MissionAssignment> getAssignments() {
@@ -210,16 +233,16 @@ public class Mission extends SuperObject {
         this.assignments = assignments;
     }
 
-    public void getAssignedToGuildMember(GuildMember guildMember, boolean isLeader){
-        this.assignments.add(new MissionAssignment(guildMember, this));
+    public MissionStatus getStatus() {
+        return status;
     }
 
-    public void addMissionAssignment(MissionAssignment missionAssignment) {
-        if (this.assignments.size() < 4){
-            this.assignments.add(missionAssignment);
-        }else {
-            throw new IllegalArgumentException("mission cannot have more than 4 assigned members");
-        }
+    public long getStartTimeMillis() {
+        return startTimeMillis;
+    }
+
+    public void getAssignedToGuildMember(GuildMember guildMember, boolean isLeader){
+        this.assignments.add(new MissionAssignment(guildMember, this));
     }
 
     public void addMissionRequirement(RequiredSpell requiredSpell) {

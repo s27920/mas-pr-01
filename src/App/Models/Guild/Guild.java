@@ -80,8 +80,8 @@ public class Guild extends SuperObject {
 
     /**
      *
-     * calculates the value of a guild's treasury using the value of its members owned treasure (provided it is of type MissionRewardType.COIN)
-     * summed with the total value of the guild's owned Magical resources
+     * calculates the value of a guild's treasury using the value of its members owned treasure <br/>
+     * (provided it is of type MissionRewardType.COIN) summed with the total value of the guild's owned Magical resources
      *
      * @return treasury value
      */

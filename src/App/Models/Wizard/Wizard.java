@@ -66,10 +66,6 @@ public class Wizard extends SuperObject {
         tome.setOwnedBy(this);
     }
 
-    public void LearnSpell(Spell spell){
-        this.knownSpells.add(new KnownSpell(this, spell, 1));
-    }
-
     public int getChosenIcon() {
         return chosenIcon;
     }

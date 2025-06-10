@@ -116,7 +116,6 @@ public class GuildViewPanel extends JPanel {
             backgroundImagePanel.add(missionMarker, JLayeredPane.PALETTE_LAYER);
         }
 
-        System.out.println("finished");
         MissionMarkerCreationCountDownLatch.getInstance().countDown();
 
         this.setLayout(new BorderLayout());

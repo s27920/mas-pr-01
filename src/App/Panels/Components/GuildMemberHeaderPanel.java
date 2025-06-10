@@ -6,6 +6,7 @@ import App.Panels.GuiUtil.ImagePanel;
 import App.Panels.GuiUtil.RoundedPanel;
 import App.StaticUtils.ColorUtils;
 import App.StaticUtils.FontUtils;
+import App.Util.MissionTimerService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -56,13 +57,7 @@ public class GuildMemberHeaderPanel extends JPanel {
         speedUpPanel = new RoundedPanel(5);
 
         speedUpPanel.setLayout(new GridBagLayout());
-        if (Mission.isFlippedMissionTimeDevScalar()){
-            speedUpPanel.setBorderColor(ColorUtils.CARBON);
-            speedUpPanel.setBackground(ColorUtils.darkenColor(ColorUtils.DARK_GREY, 10));
-        }else {
-            speedUpPanel.setBackground(ColorUtils.DARK_GREY);
-            speedUpPanel.setBorderColor(ColorUtils.DARK_GREY);
-        }
+        flipPanelColors();
         speedUpPanel.setBorderWidth(2);
         speedUpPanel.setOpaque(false);
         speedUpPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -78,13 +73,8 @@ public class GuildMemberHeaderPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 Mission.flipMissionTimeDevScalar();
-                if (Mission.isFlippedMissionTimeDevScalar()){
-                    speedUpPanel.setBorderColor(ColorUtils.CARBON);
-                    speedUpPanel.setBackground(ColorUtils.darkenColor(speedUpPanel.getBackground(), 15));
-                }else {
-                    speedUpPanel.setBorderColor(ColorUtils.DARK_GREY);
-                    speedUpPanel.setBackground(ColorUtils.lightenColor(speedUpPanel.getBackground(), 15));
-                }
+                MissionTimerService.getInstance().rescheduleMissions();
+                flipPanelColors();
             }
 
             @Override
@@ -130,6 +120,16 @@ public class GuildMemberHeaderPanel extends JPanel {
 
         gbc.gridx++;
         gbc.insets = new Insets(1, 1, 1, 1);
+    }
+
+    private void flipPanelColors() {
+        if (Mission.isFlippedMissionTimeDevScalar()) {
+            speedUpPanel.setBorderColor(ColorUtils.CARBON);
+            speedUpPanel.setBackground(new Color(96, 96, 96));
+        } else {
+            speedUpPanel.setBorderColor(ColorUtils.DARK_GREY);
+            speedUpPanel.setBackground(new Color(76, 76, 76));
+        }
     }
 
     public void setLoggedInMember(GuildMember member) {

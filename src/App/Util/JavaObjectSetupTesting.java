@@ -3,9 +3,11 @@ package App.Util;
 import App.Models.Guild.Guild;
 import App.Models.Guild.GuildMember;
 import App.Models.Guild.Territory;
-import App.Models.Magic.KnownSpell;
 import App.Models.Magic.RequiredSpell;
-import App.Models.Magic.Spells.*;
+import App.Models.Magic.Spells.DamageSpell;
+import App.Models.Magic.Spells.HealingSpell;
+import App.Models.Magic.Spells.Spell;
+import App.Models.Magic.Spells.SupportSpell;
 import App.Models.Mission.Mission;
 import App.Models.Mission.MissionDifficulty;
 import App.Models.Mission.MissionReward;
@@ -14,6 +16,13 @@ import App.Types.Coords;
 
 import java.util.*;
 
+/**
+ * Class made for seeding example data in the event a file read fails
+ * <br/>
+ * primary method is:<br/><br/>
+ * <b>setup()</b><br/><br/>
+ * which does the actual object initializations
+ */
 public class JavaObjectSetupTesting {
     public static void setup() {
         Spell[] spellsArr = {
@@ -73,7 +82,7 @@ public class JavaObjectSetupTesting {
                 new Mission(territories[4], MissionDifficulty.Medium, "Worlds eye",
                         "Gentlemen I believe most of you are aware of the existence and work of one Merlin the great, our wizarding friends in particular. Well recently he was given access to study a particularly powerful crystal formed after lightning struck the skeletal remains of some depth dwelling beast washed ashore. He claims it may hold the secrets to the very nature of magic. Now whether you believe him or not the wizard guild put in a formal request for the brightest minds we have to assist in research. This is a great honor and we intend to live up to our name and rise to the occasion."),
                 new Mission(territories[5], MissionDifficulty.Medium, "Interspecies relations",
-                        "An elvish emissary just arrived in the eternal woods, he was seeking an audience with {name} the Druid leader. Supposedly after 400 years of isolationism, staying dormant during the seven year war and the ensuing inquisition now they decide to reach out. He got the audience as requested. He did not speak much but requested a small party of diplomats be sent to the Deppenkins woods for talks. This stinks to high hell and I don't trust that pointy eared leaf lover in the slightest but if they truly have decided to change their minds we cannot miss this opportunity. Take some charismatic people with you and go."),
+                        "An elvish emissary just arrived in the eternal woods, he was seeking an audience with Aglain the Druid leader. Supposedly after 400 years of isolationism, staying dormant during the seven year war and the ensuing inquisition now is the time they decide to reach out. He got the audience as requested. He did not speak much but requested a small party of diplomats be sent to the Deepenins woods for talks. This stinks to high hell and I don't trust that pointy eared leaf lover in the slightest but if they truly have decided to change their minds we cannot miss this opportunity. Take some charismatic people with you and go."),
                 new Mission(territories[6], MissionDifficulty.Medium, "Archeology Lessons",
                         "Most of you remember the expedition to the ancient tomb in the west of the Araml desert, hell most of you were there. Well a caravan of traders carrying goods from the Isles of the lost just came in. They claim to have gotten lost in the desert. Just when they thought there were done for an oasis manifested itself to them, alongside which an ancient pyramid, they attempted entering the tomb but found it to be sealed shut, this may be the big break we've been looking for. The other part of the artifact may very well lie deep in there hidden under some magical veil that made it inaccessible. The Bedouin will guide you there, they've been compensated handsomely for their efforts. Get going."),
                 new Mission(territories[7], MissionDifficulty.Medium, "Supply Lines",
@@ -172,6 +181,7 @@ public class JavaObjectSetupTesting {
                 new GuildMember("druid 6", 5, druidGuild),
                 new GuildMember("druid 7", 1, druidGuild)
         };
+
         druidMembersArr[0].getPromoted();
         druidMembersArr[0].getPromoted();
         initializeMembersWithRandomSpells(druidMembersArr, spellsArr);

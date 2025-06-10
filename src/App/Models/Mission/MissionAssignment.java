@@ -15,15 +15,15 @@ public class MissionAssignment extends SuperObject {
         guildMember.addMissionAssignment(this);
     }
 
-    public void setGuildMember(GuildMember guildMember) {
-        this.guildMember = guildMember;
-    }
-
     public void setMissionLeader(GuildMember member){
         if (!mission.getAssignments().stream().map(MissionAssignment::getGuildMember).toList().contains(member)){
             throw new IllegalArgumentException("Mission leader must be part of mission");
         }
         this.missionLeader = member;
+    }
+
+    public void setGuildMember(GuildMember guildMember) {
+        this.guildMember = guildMember;
     }
 
     public void setMission(Mission mission) {

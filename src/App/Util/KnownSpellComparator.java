@@ -5,6 +5,14 @@ import App.Models.Magic.KnownSpell;
 import java.io.Serializable;
 import java.util.Comparator;
 
+/**
+ * Used to allow the creation of an automatically sorted treeSet for storage of knownSpells <br/>
+ * Sorts by:
+ * <ol>
+ *     <li>known spell level of mastery
+ *     <li>known spell name
+ *     <li>known spell hash-code
+ */
 public class KnownSpellComparator implements Comparator<KnownSpell>, Serializable {
     @Override
     public int compare(KnownSpell ks1, KnownSpell ks2) {

@@ -1,3 +1,4 @@
+import App.Models.Mission.Mission;
 import App.Panels.Panel.MainFrame;
 import App.Util.JavaObjectSetupTesting;
 import App.Util.MissionTimerService;
@@ -23,6 +24,7 @@ public class Main {
         }
 
         MissionTimerService missionTimerServiceInstance = MissionTimerService.getInstance();
+        Mission.resetMissionScalar();
         SwingUtilities.invokeLater(MainFrame::new);
         missionTimerServiceInstance.rebuildMissions();
     }
