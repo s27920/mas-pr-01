@@ -18,7 +18,7 @@ public class WizardPanel extends RoundedPanel {
     private final ImagePanel imagePanel;
 
     public WizardPanel(GuildMember guildMember, MemberSelectionCallback callback) {
-        super(new Dimension(1, 1), 15, new Color(64, 64, 64));
+        super(new Dimension(1, 1), 15, ColorUtils.DARK_GREY);
         this.switchCardsCallback = callback;
         this.currPanel = this;
         this.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));

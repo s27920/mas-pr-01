@@ -23,7 +23,7 @@ public class PlaceHolderPanel extends JPanel implements App.Util.Iterable {
 
         roundedPanel.setLayout(new GridBagLayout());
         JLabel comp = new JLabel("+", SwingConstants.CENTER);
-        comp.setForeground(new Color(235, 227, 196));
+        comp.setForeground(ColorUtils.CREAM);
         comp.setFont(FontUtils.getJomhuriaFont(40));
         roundedPanel.add(comp);
 

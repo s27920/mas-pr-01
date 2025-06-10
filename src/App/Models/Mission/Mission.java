@@ -29,6 +29,8 @@ public class Mission extends SuperObject {
     private long missionCompletionTime = -1;
     private long startTimeMillis;
 
+    public static double missionTimeDevScalar = 1.0;
+
 
     public Mission(Territory territory, MissionDifficulty difficulty, String name, String description) {
         this.territory = territory;
@@ -38,6 +40,22 @@ public class Mission extends SuperObject {
         this.description = description;
         this.status = MissionStatus.CREATED;
         this.assignments = new HashSet<>();
+    }
+
+    public static void flipMissionTimeDevScalar() {
+        if (isFlippedMissionTimeDevScalar()){
+            Mission.missionTimeDevScalar = 1.0;
+        }else {
+            Mission.missionTimeDevScalar = 0.1;
+        }
+    }
+
+    public static boolean isFlippedMissionTimeDevScalar(){
+        if (missionTimeDevScalar > 0.95 && missionTimeDevScalar < 1.05) {
+            System.out.println(false);
+            return false;
+        }
+        return true;
     }
 
     public void startMission(){
@@ -124,7 +142,7 @@ public class Mission extends SuperObject {
 
         double territoryAccessibilityScalar = 1.0 + 0.1 * territory.getDangerLevel();
 
-        this.missionCompletionTime = ((long) (Mission.MISSION_COMPLETION_TIME_MILLIS_BASELINE * difficultyScalar * spellScalar * territoryAccessibilityScalar * territoryOwnerShipScalar));
+        this.missionCompletionTime = ((long) (Mission.MISSION_COMPLETION_TIME_MILLIS_BASELINE * difficultyScalar * spellScalar * territoryAccessibilityScalar * territoryOwnerShipScalar * missionTimeDevScalar));
     }
 
     @Override

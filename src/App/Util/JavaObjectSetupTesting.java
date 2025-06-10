@@ -65,7 +65,7 @@ public class JavaObjectSetupTesting {
                 new Mission(territories[0], MissionDifficulty.Hard, "Cleaning House",
                         "The fields surrounding the druid capital are sparsely populated, and with recent events that trend may continue. We've been getting multiple reports flowing in from the scant villages dotted about. Apparently villagers keep disappearing, being found by their own weeks later dead and drained of their blood. Now if it was just one instance we could chalk it up to the local loon or drunk making up stories but this can't be ignored. We've managed to trace whatever is causing these events to a long abandoned mineshaft located in the feet of the Colewater ridge. Investigate it."),
                 new Mission(territories[1], MissionDifficulty.Hard, "Pest control",
-                        "Settle down gentlemen. A team comprised of Druid scouts just recently returned bearing grim news. Apparently deep in the northern mountains a small party of depth striders was spotted. Seems like the inquisition 3 years ago didn't weed all of them out. This very well could be their last hold-out and I believe I do not need to explain why they cannot be allowed to stay. Gather the men get going ASAP and get ready for a fight. And team... don't go dying on me out there"),
+                        "Settle down gentlemen. A team comprised of Druid scouts just recently returned bearing grim news. Apparently deep in the northern mountains a small party of \"sea phantoms\" alongside their master was spotted. Seems like the inquisition 3 years ago didn't weed all of them out. This very well could be their last hold-out and I believe I do not need to explain why they cannot be allowed to stay. Gather the men, get going ASAP and get ready for a fight. And team... don't go dying on me out there"),
                 new Mission(territories[2], MissionDifficulty.Hard, "Pact Breaker",
                         "Intelligence reports suggest a rogue warlock cell has been conducting forbidden rituals in the ruins of their old strongholds, attempting to reestablish contact with demonic forces despite the Coalition agreements. The magical corruption is spreading, turning the already desolate landscape into something far worse. This could unravel everything the three guilds have worked for. Elimination is the only option."),
                 new Mission(territories[3], MissionDifficulty.Hard, "Blood Moon Rising",
@@ -226,7 +226,7 @@ public class JavaObjectSetupTesting {
         }
     }
     private static void initializeMembersWithRandomSpells(GuildMember[] members, Spell[] spellsArr) {
-        for (int i = 0; i < members.length; i++) {
+        for (GuildMember member : members) {
             HashSet<Integer> knownSpellsIndices = new HashSet<>();
             for (int j = 0; j < generateNormalRandomInt(2, 7); j++) {
                 int spellIndex;
@@ -234,8 +234,7 @@ public class JavaObjectSetupTesting {
                     spellIndex = ((int) (Math.random() * spellsArr.length));
                 } while (knownSpellsIndices.contains(spellIndex));
                 knownSpellsIndices.add(spellIndex);
-                members[i].learnSpell(spellsArr[spellIndex]).setMasteryLevel(((int) (Math.random() * 9)) + 1);
-
+                member.learnSpell(spellsArr[spellIndex]).setMasteryLevel(((int) (Math.random() * 9)) + 1);
             }
         }
     }

@@ -1,7 +1,9 @@
 package App.Panels.Components;
 
 import App.Models.Guild.GuildMember;
+import App.Models.Mission.Mission;
 import App.Panels.GuiUtil.ImagePanel;
+import App.Panels.GuiUtil.RoundedPanel;
 import App.StaticUtils.ColorUtils;
 import App.StaticUtils.FontUtils;
 
@@ -15,11 +17,13 @@ public class GuildMemberHeaderPanel extends JPanel {
 
     private final JPanel wrapperPanel;
     private final JPanel glue;
+    private final JPanel glueTwoElectricBoogaloo;
     private final JLabel wizardNameLabel;
     private final JLabel wizardGuildLabel;
+    private final RoundedPanel speedUpPanel;
     private final GridBagConstraints gbc;
+    private final ImagePanel speedUpBtn;
 
-    private GuildMember loggedInMember;
     private ImagePanel guildLogoPanel;
     private final Runnable goBackCallback;
 
@@ -27,7 +31,7 @@ public class GuildMemberHeaderPanel extends JPanel {
         this.goBackCallback = goBackCallback;
 
         this.setLayout(new GridBagLayout());
-        this.setBackground(new Color(35, 35, 35));
+        this.setBackground(ColorUtils.CARBON);
 
         wrapperPanel = new JPanel(new BorderLayout());
         wrapperPanel.setBackground(ColorUtils.TRANSPARENT);
@@ -48,7 +52,60 @@ public class GuildMemberHeaderPanel extends JPanel {
         wrapperPanel.add(wizardGuildLabel, BorderLayout.SOUTH);
 
         glue = new JPanel();
+        glueTwoElectricBoogaloo = new JPanel();
+        speedUpPanel = new RoundedPanel(5);
+
+        speedUpPanel.setLayout(new GridBagLayout());
+        if (Mission.isFlippedMissionTimeDevScalar()){
+            speedUpPanel.setBorderColor(ColorUtils.CARBON);
+            speedUpPanel.setBackground(ColorUtils.darkenColor(ColorUtils.DARK_GREY, 10));
+        }else {
+            speedUpPanel.setBackground(ColorUtils.DARK_GREY);
+            speedUpPanel.setBorderColor(ColorUtils.DARK_GREY);
+        }
+        speedUpPanel.setBorderWidth(2);
+        speedUpPanel.setOpaque(false);
+        speedUpPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        GridBagConstraints speedUpGbc = new GridBagConstraints();
+        speedUpGbc.gridy = 0;
+        speedUpGbc.gridx = 0;
+        speedUpGbc.fill = GridBagConstraints.NONE;
+        speedUpGbc.weighty = 0.0;
+        speedUpGbc.weightx = 0.0;
+        speedUpGbc.anchor = GridBagConstraints.CENTER;
+        speedUpPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                Mission.flipMissionTimeDevScalar();
+                if (Mission.isFlippedMissionTimeDevScalar()){
+                    speedUpPanel.setBorderColor(ColorUtils.CARBON);
+                    speedUpPanel.setBackground(ColorUtils.darkenColor(speedUpPanel.getBackground(), 15));
+                }else {
+                    speedUpPanel.setBorderColor(ColorUtils.DARK_GREY);
+                    speedUpPanel.setBackground(ColorUtils.lightenColor(speedUpPanel.getBackground(), 15));
+                }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                speedUpPanel.setBackground(ColorUtils.lightenColor(speedUpPanel.getBackground(), 25));
+                speedUpBtn.setBackground(ColorUtils.lightenColor(speedUpBtn.getBackground(), 25));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                speedUpPanel.setBackground(ColorUtils.darkenColor(speedUpPanel.getBackground(), 25));
+                speedUpBtn.setBackground(ColorUtils.darkenColor(speedUpBtn.getBackground(), 25));
+            }
+        });
+
+        speedUpBtn = ImagePanel.getFastForwardButton();
+        speedUpBtn.setBackground(ColorUtils.TRANSPARENT);
+        speedUpPanel.add(speedUpBtn, speedUpGbc);
+
         glue.setBackground(ColorUtils.TRANSPARENT);
+        glueTwoElectricBoogaloo.setBackground(ColorUtils.TRANSPARENT);
 
         gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
@@ -62,19 +119,26 @@ public class GuildMemberHeaderPanel extends JPanel {
 
         gbc.gridx++;
         this.add(glue, gbc);
+        gbc.gridx++;
+        gbc.weighty = 0.0;
+        gbc.fill = GridBagConstraints.NONE;
+        this.add(speedUpPanel, gbc);
+        gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.VERTICAL;
+        gbc.gridx++;
+        this.add(glueTwoElectricBoogaloo, gbc);
 
         gbc.gridx++;
         gbc.insets = new Insets(1, 1, 1, 1);
     }
 
     public void setLoggedInMember(GuildMember member) {
-        this.loggedInMember = member;
 
         if (guildLogoPanel != null) {
             this.remove(guildLogoPanel);
         }
 
-        guildLogoPanel = ImagePanel.getGuildIcon(loggedInMember.getGuild().getChosenIcon());
+        guildLogoPanel = ImagePanel.getGuildIcon(member.getGuild().getChosenIcon());
         guildLogoPanel.setPreferredSize(new Dimension(LABEL_HEIGHT - 2, LABEL_HEIGHT - 2));
         guildLogoPanel.setBackground(ColorUtils.TRANSPARENT);
         guildLogoPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -99,7 +163,20 @@ public class GuildMemberHeaderPanel extends JPanel {
         int labelWidth = width / 5;
 
         wrapperPanel.setPreferredSize(new Dimension(labelWidth, LABEL_HEIGHT));
-        glue.setPreferredSize(new Dimension(width - labelWidth - LABEL_HEIGHT, LABEL_HEIGHT));
+
+        // has to account for the guild text wrapper panel size (label width) and half the speedUpPanel width
+        int glueOneWidth = width / 2 - labelWidth * 3 / 2;
+        int totalGlueWidth = width - labelWidth * 2 - LABEL_HEIGHT;
+        int glueTwoElectricBoogalooWidth = totalGlueWidth - glueOneWidth;
+
+        glue.setPreferredSize(new Dimension(glueOneWidth, LABEL_HEIGHT));
+        glueTwoElectricBoogaloo.setPreferredSize(new Dimension(glueTwoElectricBoogalooWidth, LABEL_HEIGHT));
+
+        int speedUpPanelHeight = LABEL_HEIGHT * 4 / 5;
+        speedUpPanel.setPreferredSize(new Dimension(labelWidth, speedUpPanelHeight));
+        double scalar = (double) speedUpBtn.getOriginalImageWidth() / speedUpBtn.getOriginalImageHeight();
+        int imageHeight = speedUpPanelHeight * 9 / 10;
+        speedUpBtn.setPreferredSize(new Dimension(((int) (imageHeight * scalar)), imageHeight));
 
         wizardNameLabel.setPreferredSize(new Dimension(labelWidth, wizardNameLabel.getFont().getSize()));
         wizardGuildLabel.setPreferredSize(new Dimension(labelWidth, wizardGuildLabel.getFont().getSize()));
@@ -107,8 +184,5 @@ public class GuildMemberHeaderPanel extends JPanel {
         super.setBounds(x, y, width, height);
     }
 
-    public int getLabelHeight() {
-        return LABEL_HEIGHT;
-    }
 }
 

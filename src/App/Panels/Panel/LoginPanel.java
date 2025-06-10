@@ -37,7 +37,7 @@ public class LoginPanel extends JPanel {
 
         infoPanel.add(informationLabel, BorderLayout.CENTER);
 
-        this.setBackground(new Color(43, 43, 43));
+        this.setBackground(ColorUtils.CARBON);
         wrapperPanel.setBackground(new Color(43, 43, 43));
 
         this.add(infoPanel, gbc);

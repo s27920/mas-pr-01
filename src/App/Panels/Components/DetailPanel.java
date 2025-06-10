@@ -64,8 +64,7 @@ public class DetailPanel extends RoundedPanel implements Runnable {
         statusLabel = new JLabel(String.format("Mission status: %s", mission.getStatus().name().toLowerCase().replaceAll("_", " ")), SwingConstants.CENTER);
         Dimension labelSize = new Dimension(dim.width, ((int) (dim.height * 0.15)));
         statusLabel.setPreferredSize(labelSize);
-        Color carbonColor = new Color(35, 35, 35);
-        statusLabel.setForeground(carbonColor);
+        statusLabel.setForeground(ColorUtils.CARBON);
         statusLabel.setFont(FontUtils.getJomhuriaFont(20));
 
         gbc.gridx = 0;
@@ -82,7 +81,7 @@ public class DetailPanel extends RoundedPanel implements Runnable {
             this.timerThread.start();
             this.timeLabel = new JLabel();
             timeLabel.setPreferredSize(labelSize);
-            timeLabel.setForeground(carbonColor);
+            timeLabel.setForeground(ColorUtils.CARBON);
             this.timeLabel.setFont(FontUtils.getJomhuriaFont(32));
 
             this.add(timeLabel, gbc);

@@ -69,7 +69,7 @@ public class SelectedMemberPanel extends JPanel implements App.Util.Iterable {
 
         JLabel nameLabel = new JLabel(guildMember.getName(), SwingConstants.CENTER);
         nameLabel.setFont(FontUtils.getJomhuriaFont(15));
-        nameLabel.setForeground(new Color(235, 227, 196));
+        nameLabel.setForeground(ColorUtils.CREAM);
         nameLabel.setBackground(ColorUtils.TRANSPARENT);
         nameLabel.setOpaque(false);
         roundedPanel.add(nameLabel, roundedPanelGbc);
